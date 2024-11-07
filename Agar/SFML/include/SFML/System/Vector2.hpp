@@ -71,6 +71,8 @@ public:
 
     static Vector2<T> Normalize(const Vector2<T>&);
 
+    static double Distance(const Vector2<T>&, const Vector2<T>&);
+
     template <typename U>
     explicit Vector2(const Vector2<U>& vector);
 

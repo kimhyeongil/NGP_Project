@@ -44,10 +44,16 @@ y(Y)
 {
 
 }
+
 template <typename T>
 inline Vector2<T> Vector2<T>::Normalize(const Vector2<T>& vector)
 {
     return vector / (T)vector.Lenth();
+}
+template <typename T>
+inline double Vector2<T>::Distance(const Vector2<T>& v1, const Vector2<T>& v2)
+{
+    return Vector2<T>{v1 - v2}.Lenth();
 }
 
 ////////////////////////////////////////////////////////////
