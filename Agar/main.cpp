@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include "Common.h"
+#include "Entity.h"
 
 using namespace std;
 
@@ -14,14 +15,13 @@ int main()
 
     sf::View view(sf::FloatRect(0, 0, windowWidth, windowHeight));
 
+    Entity entity;
 
     sf::CircleShape player(20.f);
     player.setFillColor(sf::Color::Green);
     player.setOrigin(player.getRadius(), player.getRadius());
 
     sf::Vector2f playerPos(windowWidth / 2.f, windowHeight / 2.f);
-    sf::Vector2f dest = playerPos;
-    player.setPosition(playerPos);
 
     view.setCenter(playerPos);
 
@@ -32,8 +32,11 @@ int main()
         float deltaTime = clock.restart().asSeconds();
 
         sf::Event event;
+        std::vector<sf::Event> events;
+
         while (window.pollEvent(event))
         {
+            events.emplace_back(event);
             if (event.type == sf::Event::Closed)
                 window.close();
 
@@ -44,18 +47,17 @@ int main()
                     sf::Vector2i mousePixel(event.mouseButton.x, event.mouseButton.y);
                     sf::Vector2f mouseWorld = window.mapPixelToCoords(mousePixel, view);
 
-                    dest = mouseWorld;
-                    cout << sf::Vector2f::Normalize(mouseWorld) << endl;
+                    cout << sf::Vector2f::Distance(mouseWorld, playerPos) << endl;
                     cout << "클릭 월드 위치: (" << mouseWorld.x << ", " << mouseWorld.y << ")" << endl;
                 }
             }
         }
-    
+        entity.HandleInput(events);
         window.clear(sf::Color::White);
 
         window.setView(view);
 
-        window.draw(player);
+        entity.Render(window);
 
         window.display();
     }
