@@ -66,6 +66,11 @@ public:
     /// \param vector Vector to convert
     ///
     ////////////////////////////////////////////////////////////
+
+    double Lenth() const;
+
+    static Vector2<T> Normalize(const Vector2<T>&);
+
     template <typename U>
     explicit Vector2(const Vector2<U>& vector);
 
@@ -246,6 +251,9 @@ bool operator ==(const Vector2<T>& left, const Vector2<T>& right);
 ////////////////////////////////////////////////////////////
 template <typename T>
 bool operator !=(const Vector2<T>& left, const Vector2<T>& right);
+
+template<typename T>
+std::ostream& operator<<(std::ostream& out, const Vector2<T>& vector);
 
 #include <SFML/System/Vector2.inl>
 

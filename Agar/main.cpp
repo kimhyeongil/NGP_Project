@@ -1,8 +1,6 @@
-#include <SFML/Graphics.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/System.hpp>
 #include <cmath>
 #include <iostream>
+#include "Common.h"
 
 using namespace std;
 
@@ -22,6 +20,7 @@ int main()
     player.setOrigin(player.getRadius(), player.getRadius());
 
     sf::Vector2f playerPos(windowWidth / 2.f, windowHeight / 2.f);
+    sf::Vector2f dest = playerPos;
     player.setPosition(playerPos);
 
     view.setCenter(playerPos);
@@ -45,11 +44,13 @@ int main()
                     sf::Vector2i mousePixel(event.mouseButton.x, event.mouseButton.y);
                     sf::Vector2f mouseWorld = window.mapPixelToCoords(mousePixel, view);
 
+                    dest = mouseWorld;
+                    cout << sf::Vector2f::Normalize(mouseWorld) << endl;
                     cout << "클릭 월드 위치: (" << mouseWorld.x << ", " << mouseWorld.y << ")" << endl;
                 }
             }
         }
-
+    
         window.clear(sf::Color::White);
 
         window.setView(view);

@@ -22,6 +22,9 @@
 //
 ////////////////////////////////////////////////////////////
 
+#include "SFML/System/Vector2.hpp"
+
+using namespace sf;
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -41,7 +44,11 @@ y(Y)
 {
 
 }
-
+template <typename T>
+inline Vector2<T> Vector2<T>::Normalize(const Vector2<T>& vector)
+{
+    return vector / (T)vector.Lenth();
+}
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -81,7 +88,11 @@ inline Vector2<T>& operator -=(Vector2<T>& left, const Vector2<T>& right)
 
     return left;
 }
-
+template <typename T>
+inline double Vector2<T>::Lenth() const
+{
+    return std::sqrt(x * x + y * y);
+}
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -158,4 +169,10 @@ template <typename T>
 inline bool operator !=(const Vector2<T>& left, const Vector2<T>& right)
 {
     return (left.x != right.x) || (left.y != right.y);
+}
+
+template<typename T>
+std::ostream& operator<<(std::ostream& out, const Vector2<T>& vector)
+{
+    return out << "(" << vector.x << ", " << vector.y << ")";
 }
