@@ -1,6 +1,7 @@
 #include "Entity.h"
 #include "Game.h"
 #include "Scene.h"
+#include "Random.h"
 #include <iostream>
 
 using namespace std;
@@ -21,7 +22,10 @@ void Entity::draw(sf::RenderTarget& target, sf::RenderStates states) const
 Player::Player()
 	: Entity{}
 	, size{ shape.getRadius() }
-{}
+{
+	shape.setPosition(Random::RandInt(size, PlayScene::worldWidth - size), Random::RandInt(size, PlayScene::worldHeight - size));
+	destination = shape.getPosition();
+}
 
 void Player::HandleInput(const sf::Event& event)
 {
