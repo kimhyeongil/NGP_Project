@@ -35,7 +35,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief VideoMode defines a video mode (width, height, bpp)
+/// \brief VideoMode defines a video mode (worldWidth, worldHeight, bpp)
 ///
 ////////////////////////////////////////////////////////////
 class SFML_WINDOW_API VideoMode
@@ -77,7 +77,7 @@ public:
     /// modes that can be used in fullscreen mode.
     /// The returned array is sorted from best to worst, so that
     /// the first element will always give the best mode (higher
-    /// width, height and bits-per-pixel).
+    /// worldWidth, worldHeight and bits-per-pixel).
     ///
     /// \return Array containing all the supported fullscreen modes
     ///
@@ -99,8 +99,8 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int width;        //!< Video mode width, in pixels
-    unsigned int height;       //!< Video mode height, in pixels
+    unsigned int worldWidth;        //!< Video mode worldWidth, in pixels
+    unsigned int worldHeight;       //!< Video mode worldHeight, in pixels
     unsigned int bitsPerPixel; //!< Video mode pixel depth, in bits per pixels
 };
 
@@ -186,7 +186,7 @@ SFML_WINDOW_API bool operator >=(const VideoMode& left, const VideoMode& right);
 /// \class sf::VideoMode
 /// \ingroup window
 ///
-/// A video mode is defined by a width and a height (in pixels)
+/// A video mode is defined by a worldWidth and a worldHeight (in pixels)
 /// and a depth (in bits per pixel). Video modes are used to
 /// setup windows (sf::Window) at creation time.
 ///
@@ -216,7 +216,7 @@ SFML_WINDOW_API bool operator >=(const VideoMode& left, const VideoMode& right);
 /// {
 ///     sf::VideoMode mode = modes[i];
 ///     std::cout << "Mode #" << i << ": "
-///               << mode.width << "x" << mode.height << " - "
+///               << mode.worldWidth << "x" << mode.worldHeight << " - "
 ///               << mode.bitsPerPixel << " bpp" << std::endl;
 /// }
 ///

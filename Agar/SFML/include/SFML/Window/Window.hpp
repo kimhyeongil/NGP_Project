@@ -72,7 +72,7 @@ public:
     /// advanced OpenGL context settings such as antialiasing,
     /// depth-buffer bits, etc.
     ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param mode     Video mode to use (defines the worldWidth, worldHeight and depth of the rendering area of the window)
     /// \param title    Title of the window
     /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
     /// \param settings Additional settings for the underlying OpenGL context
@@ -111,7 +111,7 @@ public:
     /// If \a style contains Style::Fullscreen, then \a mode
     /// must be a valid video mode.
     ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param mode     Video mode to use (defines the worldWidth, worldHeight and depth of the rendering area of the window)
     /// \param title    Title of the window
     /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
     ///
@@ -129,7 +129,7 @@ public:
     /// advanced OpenGL context settings such as antialiasing,
     /// depth-buffer bits, etc.
     ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param mode     Video mode to use (defines the worldWidth, worldHeight and depth of the rendering area of the window)
     /// \param title    Title of the window
     /// \param style    %Window style, a bitwise OR combination of sf::Style enumerators
     /// \param settings Additional settings for the underlying OpenGL context

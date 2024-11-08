@@ -28,8 +28,8 @@ template <typename T>
 Rect<T>::Rect() :
 left  (0),
 top   (0),
-width (0),
-height(0)
+worldWidth (0),
+worldHeight(0)
 {
 
 }
@@ -40,8 +40,8 @@ template <typename T>
 Rect<T>::Rect(T rectLeft, T rectTop, T rectWidth, T rectHeight) :
 left  (rectLeft),
 top   (rectTop),
-width (rectWidth),
-height(rectHeight)
+worldWidth (rectWidth),
+worldHeight(rectHeight)
 {
 
 }
@@ -52,8 +52,8 @@ template <typename T>
 Rect<T>::Rect(const Vector2<T>& position, const Vector2<T>& size) :
 left  (position.x),
 top   (position.y),
-width (size.x),
-height(size.y)
+worldWidth (size.x),
+worldHeight(size.y)
 {
 
 }
@@ -65,8 +65,8 @@ template <typename U>
 Rect<T>::Rect(const Rect<U>& rectangle) :
 left  (static_cast<T>(rectangle.left)),
 top   (static_cast<T>(rectangle.top)),
-width (static_cast<T>(rectangle.width)),
-height(static_cast<T>(rectangle.height))
+worldWidth (static_cast<T>(rectangle.worldWidth)),
+worldHeight(static_cast<T>(rectangle.worldHeight))
 {
 }
 
@@ -78,10 +78,10 @@ bool Rect<T>::contains(T x, T y) const
     // Rectangles with negative dimensions are allowed, so we must handle them correctly
 
     // Compute the real min and max of the rectangle on both axes
-    T minX = std::min(left, static_cast<T>(left + width));
-    T maxX = std::max(left, static_cast<T>(left + width));
-    T minY = std::min(top, static_cast<T>(top + height));
-    T maxY = std::max(top, static_cast<T>(top + height));
+    T minX = std::min(left, static_cast<T>(left + worldWidth));
+    T maxX = std::max(left, static_cast<T>(left + worldWidth));
+    T minY = std::min(top, static_cast<T>(top + worldHeight));
+    T maxY = std::max(top, static_cast<T>(top + worldHeight));
 
     return (x >= minX) && (x < maxX) && (y >= minY) && (y < maxY);
 }
@@ -111,16 +111,16 @@ bool Rect<T>::intersects(const Rect<T>& rectangle, Rect<T>& intersection) const
     // Rectangles with negative dimensions are allowed, so we must handle them correctly
 
     // Compute the min and max of the first rectangle on both axes
-    T r1MinX = std::min(left, static_cast<T>(left + width));
-    T r1MaxX = std::max(left, static_cast<T>(left + width));
-    T r1MinY = std::min(top, static_cast<T>(top + height));
-    T r1MaxY = std::max(top, static_cast<T>(top + height));
+    T r1MinX = std::min(left, static_cast<T>(left + worldWidth));
+    T r1MaxX = std::max(left, static_cast<T>(left + worldWidth));
+    T r1MinY = std::min(top, static_cast<T>(top + worldHeight));
+    T r1MaxY = std::max(top, static_cast<T>(top + worldHeight));
 
     // Compute the min and max of the second rectangle on both axes
-    T r2MinX = std::min(rectangle.left, static_cast<T>(rectangle.left + rectangle.width));
-    T r2MaxX = std::max(rectangle.left, static_cast<T>(rectangle.left + rectangle.width));
-    T r2MinY = std::min(rectangle.top, static_cast<T>(rectangle.top + rectangle.height));
-    T r2MaxY = std::max(rectangle.top, static_cast<T>(rectangle.top + rectangle.height));
+    T r2MinX = std::min(rectangle.left, static_cast<T>(rectangle.left + rectangle.worldWidth));
+    T r2MaxX = std::max(rectangle.left, static_cast<T>(rectangle.left + rectangle.worldWidth));
+    T r2MinY = std::min(rectangle.top, static_cast<T>(rectangle.top + rectangle.worldHeight));
+    T r2MaxY = std::max(rectangle.top, static_cast<T>(rectangle.top + rectangle.worldHeight));
 
     // Compute the intersection boundaries
     T interLeft   = std::max(r1MinX, r2MinX);
@@ -150,7 +150,7 @@ sf::Vector2<T> Rect<T>::getPosition() const
 template <typename T>
 sf::Vector2<T> Rect<T>::getSize() const
 {
-    return sf::Vector2<T>(width, height);
+    return sf::Vector2<T>(worldWidth, worldHeight);
 }
 
 
@@ -158,8 +158,8 @@ sf::Vector2<T> Rect<T>::getSize() const
 template <typename T>
 inline bool operator ==(const Rect<T>& left, const Rect<T>& right)
 {
-    return (left.left == right.left) && (left.width == right.width) &&
-           (left.top == right.top) && (left.height == right.height);
+    return (left.left == right.left) && (left.worldWidth == right.worldWidth) &&
+           (left.top == right.top) && (left.worldHeight == right.worldHeight);
 }
 
 

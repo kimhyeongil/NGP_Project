@@ -55,8 +55,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct the rectangle from its coordinates
     ///
-    /// Be careful, the last two parameters are the width
-    /// and height, not the right and bottom coordinates!
+    /// Be careful, the last two parameters are the worldWidth
+    /// and worldHeight, not the right and bottom coordinates!
     ///
     /// \param rectLeft   Left coordinate of the rectangle
     /// \param rectTop    Top coordinate of the rectangle
@@ -176,8 +176,8 @@ public:
     ////////////////////////////////////////////////////////////
     T left;   //!< Left coordinate of the rectangle
     T top;    //!< Top coordinate of the rectangle
-    T width;  //!< Width of the rectangle
-    T height; //!< Height of the rectangle
+    T worldWidth;  //!< Width of the rectangle
+    T worldHeight; //!< Height of the rectangle
 };
 
 ////////////////////////////////////////////////////////////
@@ -228,7 +228,7 @@ typedef Rect<float> FloatRect;
 ///
 /// A rectangle is defined by its top-left corner and its size.
 /// It is a very simple class defined for convenience, so
-/// its member variables (left, top, width and height) are public
+/// its member variables (left, top, worldWidth and worldHeight) are public
 /// and can be accessed directly, just like the vector classes
 /// (Vector2 and Vector3).
 ///
@@ -239,7 +239,7 @@ typedef Rect<float> FloatRect;
 ///
 /// sf::Rect uses the usual rules for its boundaries:
 /// \li The left and top edges are included in the rectangle's area
-/// \li The right (left + width) and bottom (top + height) edges are excluded from the rectangle's area
+/// \li The right (left + worldWidth) and bottom (top + worldHeight) edges are excluded from the rectangle's area
 ///
 /// This means that sf::IntRect(0, 0, 1, 1) and sf::IntRect(1, 1, 1, 1)
 /// don't intersect.

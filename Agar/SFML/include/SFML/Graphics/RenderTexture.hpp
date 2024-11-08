@@ -77,8 +77,8 @@ public:
     /// a depth buffer. Otherwise it is unnecessary, and you should
     /// leave this parameter to false (which is its default value).
     ///
-    /// \param width       Width of the render-texture
-    /// \param height      Height of the render-texture
+    /// \param worldWidth       Width of the render-texture
+    /// \param worldHeight      Height of the render-texture
     /// \param depthBuffer Do you want this render-texture to have a depth buffer?
     ///
     /// \return True if creation has been successful
@@ -86,7 +86,7 @@ public:
     /// \deprecated Use create(unsigned int, unsigned int, const ContextSettings&) instead.
     ///
     ////////////////////////////////////////////////////////////
-    SFML_DEPRECATED bool create(unsigned int width, unsigned int height, bool depthBuffer);
+    SFML_DEPRECATED bool create(unsigned int worldWidth, unsigned int worldHeight, bool depthBuffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the render-texture
@@ -99,14 +99,14 @@ public:
     /// requires a depth or stencil buffer. Otherwise it is unnecessary, and
     /// you should leave this parameter at its default value.
     ///
-    /// \param width    Width of the render-texture
-    /// \param height   Height of the render-texture
+    /// \param worldWidth    Width of the render-texture
+    /// \param worldHeight   Height of the render-texture
     /// \param settings Additional settings for the underlying OpenGL texture and context
     ///
     /// \return True if creation has been successful
     ///
     ////////////////////////////////////////////////////////////
-    bool create(unsigned int width, unsigned int height, const ContextSettings& settings = ContextSettings());
+    bool create(unsigned int worldWidth, unsigned int worldHeight, const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system

@@ -317,11 +317,11 @@ private:
     ////////////////////////////////////////////////////////////
     struct Row
     {
-        Row(unsigned int rowTop, unsigned int rowHeight) : width(0), top(rowTop), height(rowHeight) {}
+        Row(unsigned int rowTop, unsigned int rowHeight) : worldWidth(0), top(rowTop), worldHeight(rowHeight) {}
 
-        unsigned int width;  //!< Current width of the row
+        unsigned int worldWidth;  //!< Current worldWidth of the row
         unsigned int top;    //!< Y position of the row into the texture
-        unsigned int height; //!< Height of the row
+        unsigned int worldHeight; //!< Height of the row
     };
 
     ////////////////////////////////////////////////////////////
@@ -376,13 +376,13 @@ private:
     /// \brief Find a suitable rectangle within the texture for a glyph
     ///
     /// \param page   Page of glyphs to search in
-    /// \param width  Width of the rectangle
-    /// \param height Height of the rectangle
+    /// \param worldWidth  Width of the rectangle
+    /// \param worldHeight Height of the rectangle
     ///
     /// \return Found rectangle within the texture
     ///
     ////////////////////////////////////////////////////////////
-    IntRect findGlyphRect(Page& page, unsigned int width, unsigned int height) const;
+    IntRect findGlyphRect(Page& page, unsigned int worldWidth, unsigned int worldHeight) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Make sure that the given size is the current one

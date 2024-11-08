@@ -93,13 +93,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the size of the view
     ///
-    /// \param width  New width of the view
-    /// \param height New height of the view
+    /// \param worldWidth  New worldWidth of the view
+    /// \param worldHeight New worldHeight of the view
     ///
     /// \see setCenter, getCenter
     ///
     ////////////////////////////////////////////////////////////
-    void setSize(float width, float height);
+    void setSize(float worldWidth, float worldHeight);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the size of the view

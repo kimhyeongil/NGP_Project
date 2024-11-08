@@ -139,11 +139,11 @@ public:
     /// to bother with it.
     ///
     /// \param settings Creation parameters
-    /// \param width    Back buffer width
-    /// \param height   Back buffer height
+    /// \param worldWidth    Back buffer worldWidth
+    /// \param worldHeight   Back buffer worldHeight
     ///
     ////////////////////////////////////////////////////////////
-    Context(const ContextSettings& settings, unsigned int width, unsigned int height);
+    Context(const ContextSettings& settings, unsigned int worldWidth, unsigned int worldHeight);
 
 private:
 

@@ -88,13 +88,13 @@ public:
     ///
     /// If this function fails, the texture is left unchanged.
     ///
-    /// \param width  Width of the texture
-    /// \param height Height of the texture
+    /// \param worldWidth  Width of the texture
+    /// \param worldHeight Height of the texture
     ///
     /// \return True if creation was successful
     ///
     ////////////////////////////////////////////////////////////
-    bool create(unsigned int width, unsigned int height);
+    bool create(unsigned int worldWidth, unsigned int worldHeight);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file on disk
@@ -258,8 +258,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from an array of pixels
     ///
-    /// The size of the \a pixel array must match the \a width and
-    /// \a height arguments, and it must contain 32-bits RGBA pixels.
+    /// The size of the \a pixel array must match the \a worldWidth and
+    /// \a worldHeight arguments, and it must contain 32-bits RGBA pixels.
     ///
     /// No additional check is performed on the size of the pixel
     /// array or the bounds of the area to update, passing invalid
@@ -269,13 +269,13 @@ public:
     /// texture was not previously created.
     ///
     /// \param pixels Array of pixels to copy to the texture
-    /// \param width  Width of the pixel region contained in \a pixels
-    /// \param height Height of the pixel region contained in \a pixels
+    /// \param worldWidth  Width of the pixel region contained in \a pixels
+    /// \param worldHeight Height of the pixel region contained in \a pixels
     /// \param x      X offset in the texture where to copy the source pixels
     /// \param y      Y offset in the texture where to copy the source pixels
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Uint8* pixels, unsigned int width, unsigned int height, unsigned int x, unsigned int y);
+    void update(const Uint8* pixels, unsigned int worldWidth, unsigned int worldHeight, unsigned int x, unsigned int y);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
@@ -453,11 +453,11 @@ public:
     /// \brief Enable or disable repeating
     ///
     /// Repeating is involved when using texture coordinates
-    /// outside the texture rectangle [0, 0, width, height].
+    /// outside the texture rectangle [0, 0, worldWidth, worldHeight].
     /// In this case, if repeat mode is enabled, the whole texture
     /// will be repeated as many times as needed to reach the
     /// coordinate (for example, if the X texture coordinate is
-    /// 3 * width, the texture will be repeated 3 times).
+    /// 3 * worldWidth, the texture will be repeated 3 times).
     /// If repeat mode is disabled, the "extra space" will instead
     /// be filled with border pixels.
     /// Warning: on very old graphics cards, white pixels may appear

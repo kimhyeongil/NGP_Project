@@ -75,7 +75,7 @@ public:
     /// title bar, resizable, closable, ...). If \a style contains
     /// Style::Fullscreen, then \a mode must be a valid video mode.
     ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param mode  Video mode to use (defines the worldWidth, worldHeight and depth of the rendering area of the window)
     /// \param title Title of the window
     /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
     ///
@@ -105,7 +105,7 @@ public:
     /// If \a style contains Style::Fullscreen, then \a mode
     /// must be a valid video mode.
     ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
+    /// \param mode  Video mode to use (defines the worldWidth, worldHeight and depth of the rendering area of the window)
     /// \param title Title of the window
     /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
     ///
@@ -256,13 +256,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
     ///
-    /// \a pixels must be an array of \a width x \a height pixels
+    /// \a pixels must be an array of \a worldWidth x \a worldHeight pixels
     /// in 32-bits RGBA format.
     ///
     /// The OS default icon is used by default.
     ///
-    /// \param width  Icon's width, in pixels
-    /// \param height Icon's height, in pixels
+    /// \param worldWidth  Icon's worldWidth, in pixels
+    /// \param worldHeight Icon's worldHeight, in pixels
     /// \param pixels Pointer to the array of pixels in memory. The
     ///               pixels are copied, so you need not keep the
     ///               source alive after calling this function.
@@ -270,7 +270,7 @@ public:
     /// \see setTitle
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(unsigned int width, unsigned int height, const Uint8* pixels);
+    void setIcon(unsigned int worldWidth, unsigned int worldHeight, const Uint8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

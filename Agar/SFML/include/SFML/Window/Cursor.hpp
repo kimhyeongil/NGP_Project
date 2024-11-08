@@ -133,10 +133,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Create a cursor with the provided image
     ///
-    /// \a pixels must be an array of \a width by \a height pixels
+    /// \a pixels must be an array of \a worldWidth by \a worldHeight pixels
     /// in 32-bit RGBA format. If not, this will cause undefined behavior.
     ///
-    /// If \a pixels is null or either \a width or \a height are 0,
+    /// If \a pixels is null or either \a worldWidth or \a worldHeight are 0,
     /// the current cursor is left unchanged and the function will
     /// return false.
     ///
@@ -154,7 +154,7 @@ public:
     ///          to zero, and white otherwise.
     ///
     /// \param pixels   Array of pixels of the image
-    /// \param size     Width and height of the image
+    /// \param size     Width and worldHeight of the image
     /// \param hotspot  (x,y) location of the hotspot
     /// \return true if the cursor was successfully loaded;
     ///         false otherwise

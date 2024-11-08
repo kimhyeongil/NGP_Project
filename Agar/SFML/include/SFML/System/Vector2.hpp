@@ -73,6 +73,9 @@ public:
 
     static double Distance(const Vector2<T>&, const Vector2<T>&);
 
+    static Vector2<T> Max(const Vector2<T>&, const Vector2<T>&);
+    static Vector2<T> Min(const Vector2<T>&, const Vector2<T>&);
+
     template <typename U>
     explicit Vector2(const Vector2<U>& vector);
 
@@ -164,7 +167,7 @@ Vector2<T> operator -(const Vector2<T>& left, const Vector2<T>& right);
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-Vector2<T> operator *(const Vector2<T>& left, T right);
+Vector2<T> operator *(const Vector2<T>& left, double right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -177,7 +180,7 @@ Vector2<T> operator *(const Vector2<T>& left, T right);
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-Vector2<T> operator *(T left, const Vector2<T>& right);
+Vector2<T> operator *(double left, const Vector2<T>& right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -193,7 +196,7 @@ Vector2<T> operator *(T left, const Vector2<T>& right);
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-Vector2<T>& operator *=(Vector2<T>& left, T right);
+Vector2<T>& operator *=(Vector2<T>& left, double right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -206,7 +209,7 @@ Vector2<T>& operator *=(Vector2<T>& left, T right);
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-Vector2<T> operator /(const Vector2<T>& left, T right);
+Vector2<T> operator /(const Vector2<T>& left, double right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -222,7 +225,7 @@ Vector2<T> operator /(const Vector2<T>& left, T right);
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-Vector2<T>& operator /=(Vector2<T>& left, T right);
+Vector2<T>& operator /=(Vector2<T>& left, double right);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2

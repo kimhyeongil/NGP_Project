@@ -64,27 +64,27 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Create the image and fill it with a unique color
     ///
-    /// \param width  Width of the image
-    /// \param height Height of the image
+    /// \param worldWidth  Width of the image
+    /// \param worldHeight Height of the image
     /// \param color  Fill color
     ///
     ////////////////////////////////////////////////////////////
-    void create(unsigned int width, unsigned int height, const Color& color = Color(0, 0, 0));
+    void create(unsigned int worldWidth, unsigned int worldHeight, const Color& color = Color(0, 0, 0));
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the image from an array of pixels
     ///
     /// The \a pixel array is assumed to contain 32-bits RGBA pixels,
-    /// and have the given \a width and \a height. If not, this is
+    /// and have the given \a worldWidth and \a worldHeight. If not, this is
     /// an undefined behavior.
     /// If \a pixels is null, an empty image is created.
     ///
-    /// \param width  Width of the image
-    /// \param height Height of the image
+    /// \param worldWidth  Width of the image
+    /// \param worldHeight Height of the image
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    void create(unsigned int width, unsigned int height, const Uint8* pixels);
+    void create(unsigned int worldWidth, unsigned int worldHeight, const Uint8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -174,7 +174,7 @@ public:
     bool saveToMemory(std::vector<sf::Uint8>& output, const std::string& format) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the size (width and height) of the image
+    /// \brief Return the size (worldWidth and worldHeight) of the image
     ///
     /// \return Size of the image, in pixels
     ///
@@ -258,7 +258,7 @@ public:
     ///
     /// The returned value points to an array of RGBA pixels made of
     /// 8 bits integers components. The size of the array is
-    /// width * height * 4 (getSize().x * getSize().y * 4).
+    /// worldWidth * worldHeight * 4 (getSize().x * getSize().y * 4).
     /// Warning: the returned pointer may become invalid if you
     /// modify the image, so you should never store it for too long.
     /// If the image is empty, a null pointer is returned.

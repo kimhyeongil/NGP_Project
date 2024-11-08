@@ -51,8 +51,8 @@ public:
     ////////////////////////////////////////////////////////////
     struct SizeEvent
     {
-        unsigned int width;  //!< New width, in pixels
-        unsigned int height; //!< New height, in pixels
+        unsigned int worldWidth;  //!< New worldWidth, in pixels
+        unsigned int worldHeight; //!< New worldHeight, in pixels
     };
 
     ////////////////////////////////////////////////////////////
@@ -276,7 +276,7 @@ public:
 ///
 ///     // The window was resized
 ///     if (event.type == sf::Event::Resized)
-///         doSomethingWithTheNewSize(event.size.width, event.size.height);
+///         doSomethingWithTheNewSize(event.size.worldWidth, event.size.worldHeight);
 ///
 ///     // etc ...
 /// }

@@ -24,6 +24,9 @@
 
 #include "SFML/System/Vector2.hpp"
 
+#undef min
+#undef max
+
 using namespace sf;
 
 ////////////////////////////////////////////////////////////
@@ -46,15 +49,34 @@ y(Y)
 }
 
 template <typename T>
+inline double Vector2<T>::Lenth() const
+{
+    return std::sqrt(x * x + y * y);
+}
+
+template <typename T>
 inline Vector2<T> Vector2<T>::Normalize(const Vector2<T>& vector)
 {
-    return vector / (T)vector.Lenth();
+    return vector / vector.Lenth();
 }
 template <typename T>
 inline double Vector2<T>::Distance(const Vector2<T>& v1, const Vector2<T>& v2)
 {
     return Vector2<T>{v1 - v2}.Lenth();
 }
+
+template <typename T>
+inline Vector2<T> Vector2<T>::Max(const Vector2<T>& v1, const Vector2<T>& v2)
+{
+    return Vector2<T>{std::max(v1.x, v2.x), std::max(v1.y, v2.y)};
+}
+
+template <typename T>
+inline Vector2<T> Vector2<T>::Min(const Vector2<T>& v1, const Vector2<T>& v2)
+{
+    return Vector2<T>{std::min(v1.x, v2.x), std::min(v1.y, v2.y)};
+}
+
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -94,11 +116,6 @@ inline Vector2<T>& operator -=(Vector2<T>& left, const Vector2<T>& right)
 
     return left;
 }
-template <typename T>
-inline double Vector2<T>::Lenth() const
-{
-    return std::sqrt(x * x + y * y);
-}
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -118,7 +135,7 @@ inline Vector2<T> operator -(const Vector2<T>& left, const Vector2<T>& right)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator *(const Vector2<T>& left, T right)
+inline Vector2<T> operator *(const Vector2<T>& left, double right)
 {
     return Vector2<T>(left.x * right, left.y * right);
 }
@@ -126,7 +143,7 @@ inline Vector2<T> operator *(const Vector2<T>& left, T right)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator *(T left, const Vector2<T>& right)
+inline Vector2<T> operator *(double left, const Vector2<T>& right)
 {
     return Vector2<T>(right.x * left, right.y * left);
 }
@@ -134,7 +151,7 @@ inline Vector2<T> operator *(T left, const Vector2<T>& right)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T>& operator *=(Vector2<T>& left, T right)
+inline Vector2<T>& operator *=(Vector2<T>& left, double right)
 {
     left.x *= right;
     left.y *= right;
@@ -145,7 +162,7 @@ inline Vector2<T>& operator *=(Vector2<T>& left, T right)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline Vector2<T> operator /(const Vector2<T>& left, T right)
+inline Vector2<T> operator /(const Vector2<T>& left, double right)
 {
     return Vector2<T>(left.x / right, left.y / right);
 }
