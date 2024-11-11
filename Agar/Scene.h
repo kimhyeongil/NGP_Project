@@ -1,5 +1,6 @@
 #pragma once
-#include "Common.h"
+#include "../Common.h"
+#include "GameCommon.h"
 #include <vector>
 #include <memory>
 class Entity;

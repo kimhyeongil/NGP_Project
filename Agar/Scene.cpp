@@ -64,7 +64,6 @@ void PlayScene::Update(const sf::Time& time)
 		viewCenter.y = halfViewHeight;
 	if (viewCenter.y + halfViewHeight > worldHeight)
 		viewCenter.y = worldHeight - halfViewHeight;
-	cout << viewCenter << endl;
 	view.setCenter(viewCenter);
 }
 

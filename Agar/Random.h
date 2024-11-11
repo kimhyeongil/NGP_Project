@@ -1,6 +1,10 @@
 #pragma once
-#include "Common.h"
 #include <random>
+
+namespace sf {
+	class Color;
+}
+
 struct Random
 {
 	static int RandInt(int min, int max);

@@ -1,4 +1,5 @@
 #include "Random.h"
+#include "GameCommon.h"
 
 using namespace std;
 

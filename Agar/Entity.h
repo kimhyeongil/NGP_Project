@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
-#include "Common.h"
+#include "../Common.h"
+#include "GameCommon.h"
 
 class Entity : public sf::Drawable {
 public:
