@@ -52,7 +52,9 @@ DWORD WINAPI ProcessClient(void* arg)
 		type = ntohl(type);
 		if (type == PACKET_TYPE::PLAYER_INPUT) {
 			PlayerInput input;
-			recv(client_sock, (char*)&input, sizeof(PlayerInput), MSG_WAITALL);
+			if (recv(client_sock, (char*)&input, sizeof(PlayerInput), MSG_WAITALL) == SOCKET_ERROR) {
+				break;
+			}
 			input.ntoh();
 
 			EnterCriticalSection(&cs);
