@@ -1,5 +1,7 @@
 #pragma once
 #include <winsock2.h>
+#include <memory>
+#include <any>
 
 #undef min
 #undef max
@@ -8,13 +10,14 @@ using uint = unsigned int;
 
 enum PACKET_TYPE : uint
 {
-	PLAYER_INPUT = 1
+	PLAYER_INPUT = 1,
+	PLAYER_APPEND
 };
 
 struct PACKET {
 	uint type;
 
-	void* context;
+	std::any context;
 };
 
 
@@ -34,5 +37,26 @@ struct PlayerInput {
 		uint tempy = htonf(y); memcpy(&y, &tempy, sizeof(float));
 	}
 	int id;
+	float x, y;
+};
+
+struct PlayerAppend {
+	void ntoh()
+	{
+		id = ntohl(id);
+		color = ntohl(color);
+		uint tempx; memcpy(&tempx, &x, sizeof(float)); x = ntohf(tempx);
+		uint tempy; memcpy(&tempy, &y, sizeof(float)); y = ntohf(tempy);
+	}
+	void hton()
+	{
+		id = htonl(id);
+		color = htonl(color);
+		uint tempx = htonf(x); memcpy(&x, &tempx, sizeof(float));
+		uint tempy = htonf(y); memcpy(&y, &tempy, sizeof(float));
+	}
+
+	int id;
+	int color;
 	float x, y;
 };

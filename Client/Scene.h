@@ -11,6 +11,7 @@ public:
 	virtual ~Scene() = default;
 
 	virtual void HandleEvent(const sf::Event& event) {}
+	virtual void HandlePacket(const PACKET& packet) {}
 	virtual void Update(const sf::Time& time) {}
 	virtual void Render(sf::RenderWindow& window) {}
 
@@ -28,6 +29,7 @@ public:
 	PlayScene();
 
 	virtual void HandleEvent(const sf::Event& event);
+	virtual void HandlePacket(const PACKET& packet);
 	virtual void Update(const sf::Time& time);
 	virtual void Render(sf::RenderWindow& window);
 private:

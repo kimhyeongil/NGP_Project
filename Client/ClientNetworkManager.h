@@ -1,6 +1,8 @@
 #pragma once
-#include <queue>
 #include "Common.h"
+
+#include <queue>
+#include <list>
 #include <mutex>
 #include <condition_variable>
 
@@ -10,15 +12,17 @@ public:
 	~ClientNetworkManager();
 
 	void AddPacket(PACKET packet);
-	
+	std::vector<PACKET> GetPacket();
+
 	void Send();
 	void Recv();
 private:
 	SOCKET sock;
 	std::queue<PACKET> sendQueue;
-	std::vector<PACKET> recvPacket;
+	std::list<PACKET> recvPacket;
 
 	std::condition_variable cv;
-	std::mutex mtx;
+	std::mutex sendMtx;
+	std::mutex recvMtx;
 };
 

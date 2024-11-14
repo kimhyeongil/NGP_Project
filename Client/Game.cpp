@@ -36,13 +36,13 @@ void Game::Run()
     while (window.isOpen())
     {
         sf::Time deltaTime = clock.restart();
-        ProcessEvents();
+        ProcessInputs();
         Update(deltaTime);
         Render();
     }
 }
 
-void Game::ProcessEvents()
+void Game::ProcessInputs()
 {
     sf::Event event;
     while (window.pollEvent(event))
@@ -53,6 +53,11 @@ void Game::ProcessEvents()
             window.close();
         else
             scene->HandleEvent(event);
+    }
+
+    auto recvPacket = networkManger->GetPacket();
+    for (auto& packet : recvPacket) {
+        scene->HandlePacket(packet);
     }
 }
 

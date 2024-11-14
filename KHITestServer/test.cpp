@@ -40,6 +40,19 @@ DWORD WINAPI ProcessClient(void* arg)
 	std::print("[TCP 서버] 클라이언트 접속 : IP 주소 = {}, 포트 번호 = {}", addr, ntohs(clientaddr.sin_port));
 	LeaveCriticalSection(&cs);
 
+	PACKET login;
+	login.type = PLAYER_APPEND;
+	send(client_sock, (char*)&login.type, sizeof(login.type), 0);
+
+	PlayerAppend append;
+	
+	append.id = 0;
+	append.color = 0;
+	append.x = 100;
+	append.y = 100;
+
+	send(client_sock, (char*)&append, sizeof(PlayerAppend), 0);
+
 	int retval;
 	uint type;
 
