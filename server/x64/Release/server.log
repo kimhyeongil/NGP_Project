@@ -1,0 +1,11 @@
+﻿  server.cpp
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(82,45): warning C4474: 'printf' : 서식 문자열에 전달된 인수가 너무 많습니다.
+  C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(82,45):
+  자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.
+  
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(85,56): warning C4474: 'printf' : 서식 문자열에 전달된 인수가 너무 많습니다.
+  C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(85,56):
+  자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.
+  
+server.obj : error LNK2001: 확인할 수 없는 외부 기호 "public: __cdecl Player::Player(void)" (??0Player@@QEAA@XZ)
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Agar\x64\Release\server.exe : fatal error LNK1120: 1개의 확인할 수 없는 외부 참조입니다.
