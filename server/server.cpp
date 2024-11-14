@@ -10,9 +10,10 @@
 std::vector<ClientInfo> clientInfos;
 std::deque<QueueBasket> requestQueue;
 std::vector<Player> players;
-CRITICAL_SECTION csQueue;
-CRITICAL_SECTION csClient;
-
+CRITICAL_SECTION csClientCount;
+CRITICAL_SECTION csQueue;   // 큐 관련 임계 영역
+CRITICAL_SECTION csClient;  // 클라이언트 목록 관련 임계 영역
+CRITICAL_SECTION csPlayer;  // 플레이어 목록 관련 임계 영역
 int client_count = 0;
 
 uint hton_requestType(uint type) {
@@ -69,8 +70,10 @@ void sendPlayerInfoToAllClients() {
 }
 
 // 클라이언트를 목록에서 삭제하고 다른 클라이언트에게 알림
+
+// 클라이언트 삭제 함수
 void removeClient(SOCKET clientSocket) {
-    EnterCriticalSection(&csQueue);
+    EnterCriticalSection(&csClient);  // 클라이언트 목록 동기화
     auto clientIt = std::find_if(clientInfos.begin(), clientInfos.end(), [&](const ClientInfo& client) {
         return client.clientSocket == clientSocket;
         });
@@ -79,7 +82,8 @@ void removeClient(SOCKET clientSocket) {
         int clientId = clientIt->id;
         clientInfos.erase(clientIt);
 
-        // 플레이어 목록에서도 삭제
+        // 플레이어 목록에서 해당 클라이언트의 플레이어 삭제
+        EnterCriticalSection(&csPlayer);  // 플레이어 목록 동기화
         auto playerIt = std::find_if(players.begin(), players.end(), [&](const Player& player) {
             return player.id == clientId;
             });
@@ -87,12 +91,10 @@ void removeClient(SOCKET clientSocket) {
         if (playerIt != players.end()) {
             players.erase(playerIt);
         }
-
-       
+        LeaveCriticalSection(&csPlayer);  // 플레이어 목록 동기화 종료
     }
-    LeaveCriticalSection(&csQueue);
+    LeaveCriticalSection(&csClient);  // 클라이언트 목록 동기화 종료
 }
-
 // 클라이언트 요청 처리 쓰레드
 void execute() {
     while (true) {
@@ -104,9 +106,9 @@ void execute() {
 
             if (req.requestType == LOGIN_TRY) {
                 ClientInfo newClient;
-                EnterCriticalSection(&csClient);
+                EnterCriticalSection(&csClientCount);
                 newClient.id = client_count++;
-                LeaveCriticalSection(&csClient);
+                LeaveCriticalSection(&csClientCount);
                 newClient.clientSocket = req.clientSocket;
 
                 // 플레이어 생성 및 초기화
@@ -202,6 +204,8 @@ int main(int argc, char* argv[]) {
 
     InitializeCriticalSection(&csQueue);
     InitializeCriticalSection(&csClient);
+    InitializeCriticalSection(&csPlayer);
+    InitializeCriticalSection(&csClientCount);
 
     std::thread executeThread(execute);
     executeThread.detach();

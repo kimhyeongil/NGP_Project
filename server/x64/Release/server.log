@@ -1,63 +1,11 @@
-﻿  ClientNetworkManager.cpp
-  Entity.cpp
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(26,64): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(26,36): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(26,118): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(26,89): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(26,88): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(26,35): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244: '인수': 'double'에서 'T'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244:         with
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244:         [
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244:             T=float
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244:         ]
-  (소스 파일 '../Client/Entity.cpp'을(를) 컴파일하는 중)
-  C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,46):
-  템플릿 인스턴스화 컨텍스트(가장 오래된 인스턴스화 컨텍스트)가
-  	C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(50,18):
-  	컴파일되는 함수 템플릿 인스턴스화 'sf::Vector2<float> sf::operator *<float>(const sf::Vector2<float> &,double)'에 대한 참조를 확인하세요.
-  
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244: '인수': 'double'에서 'T'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244:         with
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244:         [
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244:             T=float
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244:         ]
-  (소스 파일 '../Client/Entity.cpp'을(를) 컴파일하는 중)
-  
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244: '인수': 'double'에서 'T'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244:         with
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244:         [
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244:             T=float
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244:         ]
-  (소스 파일 '../Client/Entity.cpp'을(를) 컴파일하는 중)
-  C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,46):
-  템플릿 인스턴스화 컨텍스트(가장 오래된 인스턴스화 컨텍스트)가
-  	C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\Graphics\Transformable.hpp(319,23):
-  	컴파일되는 클래스 템플릿 인스턴스화 'sf::Vector2<float>'에 대한 참조를 확인하세요.
-  	C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(59,1):
-  	클래스 템플릿 멤버 함수 'sf::Vector2<float> sf::Vector2<float>::Normalize(const sf::Vector2<float> &)'을(를) 컴파일하는 중입니다.
-  		C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(48,24):
-  		'Player::Update'에서 'sf::Vector2<float>::Normalize'에 대한 첫 번째 참조를 확인하세요.
-  	C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(60,19):
-  	컴파일되는 함수 템플릿 인스턴스화 'sf::Vector2<float> sf::operator /<float>(const sf::Vector2<float> &,double)'에 대한 참조를 확인하세요.
-  
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244: '인수': 'double'에서 'T'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244:         with
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244:         [
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244:             T=float
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244:         ]
-  (소스 파일 '../Client/Entity.cpp'을(를) 컴파일하는 중)
-  
-  Game.cpp
-  Scene.cpp
-  server.cpp
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(51,42): warning C4267: '인수': 'size_t'에서 'u_long'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(68,62): warning C4267: '인수': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(115,66): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(115,52): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+﻿  server.cpp
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(52,42): warning C4267: '인수': 'size_t'에서 'u_long'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(69,62): warning C4267: '인수': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(117,66): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\server\server.cpp(117,52): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   코드를 생성하고 있습니다.
-  450 of 921 functions (48.9%) were compiled, the rest were copied from previous compilation.
-    327 functions were new in current compilation
-    63 functions had inline decision re-evaluated but remain unchanged
+  1 of 921 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
   server.vcxproj -> C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Agar\x64\Release\server.exe
