@@ -13,10 +13,6 @@ Game::Game()
     window.setFramerateLimit(60);
 }
 
-Game::~Game()
-{
-
-}
 
 Game& Game::Instance()
 {

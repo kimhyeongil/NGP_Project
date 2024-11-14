@@ -7,7 +7,7 @@
 #include <memory>
 #include <print>
 #include <filesystem>
-#include "../Common.h"
+#include "Common.h"
 #pragma comment(lib, "ws2_32") // ws2_32.lib ¸µÅ©
 
 using namespace std;

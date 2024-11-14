@@ -57,12 +57,16 @@ void ClientNetworkManager::Send()
 		lock.unlock();
 
 		uint netType = htonl(packet.type);
-		send(sock, (char*)&netType, sizeof(packet.type), 0);
+		if (send(sock, (char*)&netType, sizeof(packet.type), 0) == SOCKET_ERROR) {
+			exit(-1);
+		}
 
 		if (packet.type == PACKET_TYPE::PLAYER_INPUT) {
 			auto netContext = *(PlayerInput*)packet.context;
 			netContext.hton();
-			send(sock, (char*)&netContext, sizeof(PlayerInput), 0);
+			if (send(sock, (char*)&netContext, sizeof(PlayerInput), 0) == SOCKET_ERROR) {
+				exit(-1);
+			}
 		}
 	}
 }

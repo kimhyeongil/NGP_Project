@@ -76,8 +76,8 @@
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <ExecutablePath>../Client;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>../;../Client;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -153,21 +153,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ClientNetworkManager.cpp" />
-    <ClCompile Include="Entity.cpp" />
-    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="..\Client\ClientNetworkManager.cpp" />
+    <ClCompile Include="..\Client\Entity.cpp" />
+    <ClCompile Include="..\Client\Game.cpp" />
+    <ClCompile Include="..\Client\Random.cpp" />
+    <ClCompile Include="..\Client\Scene.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Random.cpp" />
-    <ClCompile Include="Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Client\ClientNetworkManager.h" />
+    <ClInclude Include="..\Client\Entity.h" />
+    <ClInclude Include="..\Client\Game.h" />
+    <ClInclude Include="..\Client\GameCommon.h" />
+    <ClInclude Include="..\Client\Random.h" />
+    <ClInclude Include="..\Client\Scene.h" />
     <ClInclude Include="..\Common.h" />
-    <ClInclude Include="ClientNetworkManager.h" />
-    <ClInclude Include="Entity.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GameCommon.h" />
-    <ClInclude Include="Random.h" />
-    <ClInclude Include="Scene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

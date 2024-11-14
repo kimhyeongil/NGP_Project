@@ -1,5 +1,5 @@
 #pragma once
-#include "../Common.h"
+#include "Common.h"
 #include "ClientNetworkManager.h"
 #include "GameCommon.h"
 #include "Scene.h"
