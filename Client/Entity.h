@@ -16,6 +16,8 @@ protected:
 
 	sf::CircleShape shape;
 	unsigned int color = 0;
+
+	int id;
 };
 
 class Player : public Entity

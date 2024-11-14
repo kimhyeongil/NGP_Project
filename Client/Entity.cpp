@@ -33,7 +33,7 @@ void Player::HandleInput(const sf::Event& event)
 		event.mouseButton.button == sf::Mouse::Left) {
 		destination = Game::Instance().WorldMouse(Vector2i{ event.mouseButton.x, event.mouseButton.y });
 		auto dir = destination - Position();
-		PlayerInput input(dir.x, dir.y);
+		PlayerInput input(id, dir.x, dir.y);
 		PACKET packet;
 		packet.type = PLAYER_INPUT;
 		packet.context = &input;
