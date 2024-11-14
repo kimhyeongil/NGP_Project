@@ -9,6 +9,8 @@ using uint = unsigned int;
 enum PACKET_TYPE : uint
 {
 	PLAYER_INPUT = 1
+	, LOGIN_SUCCESS
+	,LOGIN_TRY
 };
 
 struct PACKET {

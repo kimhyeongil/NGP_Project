@@ -11,7 +11,7 @@ public:
 	virtual void Update(double deltaTime) {}
 
 	sf::Vector2f Position() const { return shape.getPosition(); }
-protected:
+
 	virtual void draw(sf::RenderTarget&, sf::RenderStates) const;
 
 	sf::CircleShape shape;
