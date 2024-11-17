@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "Common.h"
+#include "../Common.h"
 #include "GameCommon.h"
 
 class Entity : public sf::Drawable {
@@ -8,6 +8,7 @@ public:
 	Entity();
 
 	virtual void HandleInput(const sf::Event& event) {}
+	virtual void HandleInput(const PACKET& packet) {}
 	virtual void Update(double deltaTime) {}
 
 	sf::Vector2f Position() const { return shape.getPosition(); }
@@ -26,6 +27,7 @@ public:
 	Player();
 
 	virtual void HandleInput(const sf::Event& event);
+	virtual void HandleInput(const PACKET& packet);
 	virtual void Update(double deltaTime);
 private:
 	sf::Vector2f destination;

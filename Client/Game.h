@@ -21,7 +21,7 @@ public:
 
     sf::RenderWindow window;
 private:
-    void ProcessEvents();
+    void ProcessInputs();
     void Update(sf::Time deltaTime);
     void Render();
 

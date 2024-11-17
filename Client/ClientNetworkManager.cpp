@@ -39,17 +39,27 @@ ClientNetworkManager::~ClientNetworkManager()
 	WSACleanup();
 }
 
+vector<PACKET> ClientNetworkManager::GetPacket()
+{
+	lock_guard<mutex> lock(recvMtx);
+	vector<PACKET> ret;
+	ret.reserve(recvPacket.size());
+	copy(recvPacket.begin(), recvPacket.end(), back_inserter(ret));
+	recvPacket.clear();
+	return ret;
+}
+
 void ClientNetworkManager::AddPacket(PACKET packet)
 {
-	unique_lock<mutex> lock(mtx);
-	sendQueue.push(packet);
+	unique_lock<mutex> lock(sendMtx);
+	sendQueue.emplace(packet);
 	cv.notify_all();
 }
 
 void ClientNetworkManager::Send()
 {
 	while (true) {
-		unique_lock<mutex> lock(mtx);
+		unique_lock<mutex> lock(sendMtx);
 		cv.wait(lock, [&] {return !sendQueue.empty(); });
 
 		auto packet = sendQueue.front();
@@ -62,7 +72,7 @@ void ClientNetworkManager::Send()
 		}
 
 		if (packet.type == PACKET_TYPE::PLAYER_INPUT) {
-			auto netContext = *(PlayerInput*)packet.context;
+			auto netContext = any_cast<PlayerInput>(packet.context);
 			netContext.hton();
 			if (send(sock, (char*)&netContext, sizeof(PlayerInput), 0) == SOCKET_ERROR) {
 				exit(-1);
@@ -73,5 +83,29 @@ void ClientNetworkManager::Send()
 
 void ClientNetworkManager::Recv()
 {
+	while (true) {
+		PACKET packet;
+		if (recv(sock, (char*)&packet.type, sizeof(uint), 0) == SOCKET_ERROR) {
+			exit(10000);
+		}
+		packet.type = ntohl(packet.type);
+		switch (packet.type) {
+		case PACKET_TYPE::PLAYER_APPEND:
+		{
+			PlayerAppend context;
+			if (recv(sock, (char*)&context, sizeof(PlayerAppend), 0) == SOCKET_ERROR) {
+				exit(10000);
+			}
+			context.ntoh();
+			packet.context = context;
+			cout << "네트워크 매니저 " << context.x << ", " << context.y << endl;
+		}
+		break;
+		default:
+			break;
+		}
 
+		lock_guard<mutex> lock(recvMtx);
+		recvPacket.emplace_back(packet);
+	}
 }

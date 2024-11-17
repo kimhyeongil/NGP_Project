@@ -41,6 +41,14 @@ void PlayScene::HandleEvent(const sf::Event& event)
 	player->HandleInput(event);
 }
 
+void PlayScene::HandlePacket(const PACKET& packet)
+{
+	for (auto& entity : entities) {
+		entity->HandleInput(packet);
+	}
+	player->HandleInput(packet);
+}
+
 void PlayScene::Update(const sf::Time& time)
 {
 	double deltaTime = time.asMicroseconds() * 1e-6;

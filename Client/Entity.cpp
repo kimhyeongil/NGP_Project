@@ -23,8 +23,7 @@ Player::Player()
 	: Entity{}
 	, size{ shape.getRadius() }
 {
-	shape.setPosition(Random::RandInt(size, PlayScene::worldWidth - size), Random::RandInt(size, PlayScene::worldHeight - size));
-	destination = shape.getPosition();
+	shape.setPosition(-1, -1);
 }
 
 void Player::HandleInput(const sf::Event& event)
@@ -36,8 +35,26 @@ void Player::HandleInput(const sf::Event& event)
 		PlayerInput input(id, dir.x, dir.y);
 		PACKET packet;
 		packet.type = PLAYER_INPUT;
-		packet.context = &input;
+		packet.context = input;
 		Game::Instance().Send(packet);
+	}
+}
+
+void Player::HandleInput(const PACKET& packet)
+{
+	switch (packet.type)
+	{
+	case PACKET_TYPE::PLAYER_APPEND:
+	{
+		auto context = any_cast<PlayerAppend>(packet.context);
+		color = context.color;
+		id = context.id;
+		shape.setPosition(context.x, context.y);
+		destination = Position();
+	}
+	break;
+	default:
+		break;
 	}
 }
 
