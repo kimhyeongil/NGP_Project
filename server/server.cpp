@@ -115,8 +115,8 @@ void execute() {
                 Player newPlayer;
                 newPlayer.id = newClient.id;
                 newPlayer.shape.setPosition(rand() % 800, rand() % 600); // ·£´ý À§Ä¡
-                newPlayer.color = rand() % 0xFFFFFF; // ·£´ý »ö»ó
-                newPlayer.shape.setFillColor(sf::Color(newPlayer.color));
+                int randomColor = std::rand() % colors.size();
+                newPlayer.color = randomColor; // ·£´ý »ö»ó ÇÒ´ç
 
                 EnterCriticalSection(&csQueue);
                 clientInfos.push_back(newClient);
