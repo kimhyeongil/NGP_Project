@@ -10,13 +10,13 @@ using uint = unsigned int;
 
 enum PACKET_TYPE : uint
 {
-//<<<<<<< HEAD
+
 	PLAYER_INPUT = 1
 	, LOGIN_SUCCESS
 	,LOGIN_TRY
 ,
 	PLAYER_APPEND
-//>>>>>>> main
+
 };
 
 struct PACKET {

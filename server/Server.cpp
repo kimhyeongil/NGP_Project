@@ -95,6 +95,7 @@ void removeClient(SOCKET clientSocket) {
     }
     LeaveCriticalSection(&csClient);  // 클라이언트 목록 동기화 종료
 }
+
 // 클라이언트 요청 처리 쓰레드
 void execute() {
     while (true) {
@@ -116,7 +117,6 @@ void execute() {
                 newPlayer.id = newClient.id;
                 newPlayer.shape.setPosition(rand() % 800, rand() % 600); // 랜덤 위치
                 int randomIndex = std::rand() % colors.size();
-                
                 newPlayer.color = randomIndex; // 랜덤 색상
                 
 
@@ -129,19 +129,15 @@ void execute() {
                 // 클라이언트에게 LOGIN_SUCCESS 응답 전송
                 uint successMsg = LOGIN_SUCCESS;
                 successMsg = hton_requestType(successMsg);
-                //send(req.clientSocket, reinterpret_cast<char*>(&successMsg), static_cast<int>(sizeof(successMsg)), 0);
                 printf("Client [%s] 로그인 성공 (LOGIN_SUCCESS 전송)\n", req.clientName);
 
                 // 모든 클라이언트에게 플레이어 정보 전송
                 sendPlayerInfoToAllClients();
-                for (Player p : players) {
-                    printf("id: %d\n", p.id);
-                }
+                
             }
         }
         else {
             LeaveCriticalSection(&csQueue);
-            //Sleep(10);
         }
     }
 }

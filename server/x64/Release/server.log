@@ -1,56 +1,13 @@
-﻿  ClientNetworkManager.cpp
-  Entity.cpp
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244: '인수': 'double'에서 'T'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244:         with
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244:         [
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244:             T=float
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,46): warning C4244:         ]
-  (소스 파일 '../Client/Entity.cpp'을(를) 컴파일하는 중)
-  C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,46):
-  템플릿 인스턴스화 컨텍스트(가장 오래된 인스턴스화 컨텍스트)가
-  	C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(67,18):
-  	컴파일되는 함수 템플릿 인스턴스화 'sf::Vector2<float> sf::operator *<float>(const sf::Vector2<float> &,double)'에 대한 참조를 확인하세요.
-  
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244: '인수': 'double'에서 'T'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244:         with
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244:         [
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244:             T=float
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(140,30): warning C4244:         ]
-  (소스 파일 '../Client/Entity.cpp'을(를) 컴파일하는 중)
-  
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244: '인수': 'double'에서 'T'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244:         with
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244:         [
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244:             T=float
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,46): warning C4244:         ]
-  (소스 파일 '../Client/Entity.cpp'을(를) 컴파일하는 중)
-  C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,46):
-  템플릿 인스턴스화 컨텍스트(가장 오래된 인스턴스화 컨텍스트)가
-  	C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\Graphics\Transformable.hpp(319,23):
-  	컴파일되는 클래스 템플릿 인스턴스화 'sf::Vector2<float>'에 대한 참조를 확인하세요.
-  	C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(59,1):
-  	클래스 템플릿 멤버 함수 'sf::Vector2<float> sf::Vector2<float>::Normalize(const sf::Vector2<float> &)'을(를) 컴파일하는 중입니다.
-  		C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Client\Entity.cpp(65,24):
-  		'Player::Update'에서 'sf::Vector2<float>::Normalize'에 대한 첫 번째 참조를 확인하세요.
-  	C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(60,19):
-  	컴파일되는 함수 템플릿 인스턴스화 'sf::Vector2<float> sf::operator /<float>(const sf::Vector2<float> &,double)'에 대한 참조를 확인하세요.
-  
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244: '인수': 'double'에서 'T'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244:         with
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244:         [
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244:             T=float
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\SFML\include\SFML\System\Vector2.inl(167,30): warning C4244:         ]
-  (소스 파일 '../Client/Entity.cpp'을(를) 컴파일하는 중)
-  
-  Game.cpp
-  Scene.cpp
-  server.cpp
+﻿  server.cpp
 C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\server.cpp(52,42): warning C4267: '인수': 'size_t'에서 'u_long'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\server.cpp(69,62): warning C4267: '인수': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\server.cpp(117,66): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\server.cpp(117,52): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\server.cpp(112,42): warning C4267: '인수': 'size_t'에서 'u_long'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\server.cpp(124,67): warning C4267: '인수': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\server.cpp(159,66): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Server\server.cpp(159,52): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   코드를 생성하고 있습니다.
-  Previous IPDB not found, fall back to full compilation.
-  All 988 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  7 of 989 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
+    3 functions were new in current compilation
+    4 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
   Server.vcxproj -> C:\Users\Lenovo\Desktop\넷겜플\NGP_Project\Agar\x64\Release\Server.exe
