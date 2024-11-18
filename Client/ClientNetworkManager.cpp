@@ -70,14 +70,7 @@ void ClientNetworkManager::Send()
 		if (send(sock, (char*)&netType, sizeof(packet.type), 0) == SOCKET_ERROR) {
 			exit(-1);
 		}
-
-		if (packet.type == PACKET_TYPE::PLAYER_INPUT) {
-			auto netContext = any_cast<PlayerInput>(packet.context);
-			netContext.hton();
-			if (send(sock, (char*)&netContext, sizeof(PlayerInput), 0) == SOCKET_ERROR) {
-				exit(-1);
-			}
-		}
+		packet.context->Send(sock);
 	}
 }
 
@@ -86,23 +79,20 @@ void ClientNetworkManager::Recv()
 	while (true) {
 		PACKET packet;
 		if (recv(sock, (char*)&packet.type, sizeof(uint), 0) == SOCKET_ERROR) {
-			exit(10000);
+			exit(-1);
 		}
 		packet.type = ntohl(packet.type);
 		switch (packet.type) {
 		case PACKET_TYPE::PLAYER_APPEND:
 		{
-			PlayerAppend context;
-			if (recv(sock, (char*)&context, sizeof(PlayerAppend), 0) == SOCKET_ERROR) {
-				exit(10000);
-			}
-			context.ntoh();
-			packet.context = context;
-			cout << "네트워크 매니저 " << context.x << ", " << context.y << endl;
+			packet.context = make_shared<PlayerAppend>();
 		}
 		break;
 		default:
 			break;
+		}
+		if (packet.context) {
+			packet.context->Recv(sock);
 		}
 
 		lock_guard<mutex> lock(recvMtx);
