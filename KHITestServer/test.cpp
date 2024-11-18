@@ -64,15 +64,12 @@ DWORD WINAPI ProcessClient(void* arg)
 
 		type = ntohl(type);
 		if (type == PACKET_TYPE::PLAYER_INPUT) {
-			PlayerInput input;
-			if (recv(client_sock, (char*)&input, sizeof(PlayerInput), MSG_WAITALL) == SOCKET_ERROR) {
-				break;
-			}
-			input.ntoh();
+			auto input = make_shared<PlayerInput>();
+			input->Recv(client_sock);
 
 			EnterCriticalSection(&cs);
 			SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD(0, line++));
-			print("[TCP 서버] 클라이언트 입력: IP 주소 = {}, 포트 번호 = {}, 위치 ({}, {})", addr, ntohs(clientaddr.sin_port), input.x, input.y);
+			print("[TCP 서버] 클라이언트 입력: IP 주소 = {}, 포트 번호 = {}, 위치 ({}, {})", addr, ntohs(clientaddr.sin_port), input->x, input->y);
 			LeaveCriticalSection(&cs);
 		}
 	}
