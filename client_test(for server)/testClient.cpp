@@ -119,7 +119,8 @@ int main() {
                 memcpy(&playerInfo, buf, sizeof(PlayerInfo));
                 playerInfo.id = ntohl(playerInfo.id);
                 playerInfo.color = ntohl(playerInfo.color);
-
+                playerInfo.posX = ntohl(playerInfo.posX);
+                playerInfo.posY = ntohl(playerInfo.posY);
                 std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
                     << ", Position: (" << playerInfo.posX << ", " << playerInfo.posY << ")\n";
             }

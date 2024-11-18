@@ -8,7 +8,7 @@
 #include <stdlib.h> // exit(), ...
 #include <string.h> // strncpy(), ...
 #include <deque>
-#include "Entity.h"
+#include "../Client/Entity.h"
 #include "..//Common.h"
 
 #pragma comment(lib, "ws2_32") // Link with ws2_32.lib
