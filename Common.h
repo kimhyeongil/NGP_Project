@@ -127,10 +127,33 @@ struct LoginSuccess : public PacketContext {
 
 
 
-struct TEST : public PacketContext
+struct PlayerCount : public PacketContext
 {
+	void Send(SOCKET sock) override
+	{
+		PlayerCount temp = *this;
+		temp.hton();
+		send(sock, (char*)&temp, sizeof(PlayerCount), 0);
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		PlayerCount temp;
+		recv(sock, (char*)&temp, sizeof(PlayerCount), 0);
+		*this = temp;
+		ntoh();
+	}
+
+	void ntoh() override
+	{
+		cnt = ntohl(cnt);
+	}
+
+	void hton() override
+	{
+		cnt = htonl(cnt);
+	}
 	int cnt;
-	void* context;
 };
 enum PACKET_TYPE : uint
 {

@@ -56,8 +56,12 @@ void sendAllPlayerInfos(SOCKET clientSocket) {
     uint packetType = hton_requestType(LOGIN_SUCCESS);
     send(clientSocket, reinterpret_cast<char*>(&packetType), sizeof(packetType), 0);
 
-    uint playerCount = htonl(players.size());
-    send(clientSocket, reinterpret_cast<char*>(&playerCount), sizeof(playerCount), 0);
+    //uint playerCount = htonl(players.size());
+    //send(clientSocket, reinterpret_cast<char*>(&playerCount), sizeof(playerCount), 0);
+
+    PlayerCount cnt;
+    cnt.cnt = players.size();
+    cnt.Send(clientSocket);
     std::vector<char> allPlayerData;
     for (const auto& player : players) {
         LoginSuccess playerInfo;
@@ -139,7 +143,9 @@ void execute() {
 
                 Player newPlayer;
                 newPlayer.id = newClient.id;
-                newPlayer.shape.setPosition(rand() % 2000, rand() % 2000);
+                float x = static_cast<float>(rand()) / RAND_MAX * 2000.0f;
+                float y = static_cast<float>(rand()) / RAND_MAX * 2000.0f;
+                newPlayer.shape.setPosition(x, y);
                 int randomIndex = std::rand() % colors.size();
                 newPlayer.color = randomIndex;
 
