@@ -87,6 +87,49 @@ struct PlayerAppend : public PacketContext{
 	float x, y;
 };
 
+
+struct LoginSuccess : public PacketContext {
+	void Send(SOCKET sock) override
+	{
+		LoginSuccess temp = *this;
+		temp.hton();
+		send(sock, (char*)&temp, sizeof(LoginSuccess), 0);
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		LoginSuccess temp;
+		recv(sock, (char*)&temp, sizeof(LoginSuccess), 0);
+		*this = temp;
+		ntoh();
+	}
+
+	void ntoh() override
+	{
+		id = ntohl(id);
+		color = ntohl(color);
+		uint tempx; memcpy(&tempx, &x, sizeof(float)); x = ntohf(tempx);
+		uint tempy; memcpy(&tempy, &y, sizeof(float)); y = ntohf(tempy);
+	}
+
+	void hton() override
+	{
+		id = htonl(id);
+		color = htonl(color);
+		uint tempx = htonf(x); memcpy(&x, &tempx, sizeof(float));
+		uint tempy = htonf(y); memcpy(&y, &tempy, sizeof(float));
+	}
+
+	int id;
+	int color;
+	float x, y;
+};
+
+struct TEST : public PacketContext
+{
+	int cnt;
+	void* context;
+};
 enum PACKET_TYPE : uint
 {
 

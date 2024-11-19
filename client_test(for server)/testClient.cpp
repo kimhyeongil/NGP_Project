@@ -107,7 +107,7 @@ int main() {
 
             // 플레이어 정보 수신
             for (uint i = 0; i < playerCount; ++i) {
-                retval = recv(sock, buf, sizeof(PlayerInfo), 0);
+                retval = recv(sock, buf, sizeof(LoginSuccess), 0);
                 if (retval <= 0) {
                     std::cerr << "Failed to receive player info.\n";
                     closesocket(sock);
@@ -115,15 +115,39 @@ int main() {
                     return -1;
                 }
 
-                PlayerInfo playerInfo;
-                memcpy(&playerInfo, buf, sizeof(PlayerInfo));
+                LoginSuccess playerInfo;
+                memcpy(&playerInfo, buf, sizeof(LoginSuccess));
                 playerInfo.id = ntohl(playerInfo.id);
                 playerInfo.color = ntohl(playerInfo.color);
-                playerInfo.posX = ntohl(playerInfo.posX);
-                playerInfo.posY = ntohl(playerInfo.posY);
+                playerInfo.x = ntohl(playerInfo.x);
+                playerInfo.y = ntohl(playerInfo.y);
                 std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
-                    << ", Position: (" << playerInfo.posX << ", " << playerInfo.posY << ")\n";
+                    << ", Position: (" << playerInfo.x << ", " << playerInfo.y << ")\n";
             }
+        }
+        if (responseType == PLAYER_APPEND) {
+            // 플레이어 수 수신
+
+
+            // 플레이어 정보 수신
+
+            retval = recv(sock, buf, sizeof(PlayerAppend), 0);
+            if (retval <= 0) {
+                std::cerr << "Failed to receive player info.\n";
+                closesocket(sock);
+                WSACleanup();
+                return -1;
+            }
+
+            PlayerAppend playerInfo;
+            memcpy(&playerInfo, buf, sizeof(PlayerAppend));
+            playerInfo.id = ntohl(playerInfo.id);
+            playerInfo.color = ntohl(playerInfo.color);
+            playerInfo.x = ntohl(playerInfo.x);
+            playerInfo.y = ntohl(playerInfo.y);
+            std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
+                << ", Position: (" << playerInfo.x << ", " << playerInfo.y << ")\n";
+
         }
     }
     closesocket(sock);

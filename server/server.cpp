@@ -3,11 +3,10 @@
 #include <string>
 #include <cstring>
 #include <algorithm>
-#include <SFML/System.hpp>
 #include <vector>
 #include <deque>
 #include <mutex>
-
+#include "../SFML/include/SFML/System.hpp"
 #define SERVERPORT 9000
 #define BUFSIZE 512
 
@@ -19,7 +18,6 @@ std::mutex queueMutex;
 std::mutex clientMutex;
 std::mutex playerMutex;
 int client_count = 0;
-
 uint hton_requestType(uint type) {
     return static_cast<uint>(htonl(static_cast<int>(type)));
 }
@@ -27,19 +25,9 @@ uint hton_requestType(uint type) {
 uint ntoh_requestType(uint type) {
     return static_cast<uint>(ntohl(static_cast<int>(type)));
 }
-
-// ClientInfo 변환 함수 (네트워크 바이트 정렬)
-void hton_clientInfo(ClientInfo& client) {
-    client.id = htonl(client.id);
-}
-
-void ntoh_clientInfo(ClientInfo& client) {
-    client.id = ntohl(client.id);
-}
-
 // 모든 클라이언트에게 데이터를 전송하는 함수
 void sendToAllClients(const char* data, int dataSize) {
-    std::lock_guard<std::mutex> lock(queueMutex);
+    std::lock_guard<std::mutex> lock(clientMutex);
     for (const auto& client : clientInfos) {
         send(client.clientSocket, data, dataSize, 0);
     }
@@ -55,18 +43,60 @@ void sendPlayerInfoToAllClients() {
 
     std::vector<char> allPlayerData;
     for (const auto& player : players) {
-        PlayerInfo playerInfo;
-        playerInfo.id = htonl(player.id);
-        playerInfo.color = htonl(player.color);
-        playerInfo.posX = htonl(player.Position().x);
-        playerInfo.posY = htonl(player.Position().y);
+        Player playerInfo;
+        playerInfo.id = player.id;
+        playerInfo.color = player.color;
+        //playerInfo.posX = player.Position().x;
+        //playerInfo.posY = player.Position().y;
 
-        allPlayerData.insert(allPlayerData.end(), reinterpret_cast<char*>(&playerInfo), reinterpret_cast<char*>(&playerInfo) + sizeof(PlayerInfo));
+        //hton_playerInfo(playerInfo);
+
+        allPlayerData.insert(allPlayerData.end(), reinterpret_cast<char*>(&playerInfo), reinterpret_cast<char*>(&playerInfo) + sizeof(Player));
     }
 
     sendToAllClients(allPlayerData.data(), allPlayerData.size());
 }
+void sendAllPlayerInfos(SOCKET clientSocket) {
+    uint packetType = hton_requestType(LOGIN_SUCCESS);
+    send(clientSocket, reinterpret_cast<char*>(&packetType), sizeof(packetType), 0);
 
+    uint playerCount = htonl(players.size());
+    send(clientSocket, reinterpret_cast<char*>(&playerCount), sizeof(playerCount), 0);
+    std::vector<char> allPlayerData;
+    for (const auto& player : players) {
+        LoginSuccess playerInfo;
+        playerInfo.id = player.id;
+        playerInfo.color = player.color;
+        playerInfo.x = player.Position().x;
+        playerInfo.y = player.Position().y;
+        playerInfo.hton();
+
+        allPlayerData.insert(allPlayerData.end(), reinterpret_cast<char*>(&playerInfo), reinterpret_cast<char*>(&playerInfo) + sizeof(LoginSuccess));
+    }
+
+    send(clientSocket, allPlayerData.data(), allPlayerData.size(), 0);
+}
+void sendToEveryoneElse(SOCKET exceptSocket, const char* data, int dataSize) {
+    std::lock_guard<std::mutex> lock(clientMutex);
+    for (const auto& client : clientInfos) {
+        if (exceptSocket != client.clientSocket) {
+            send(client.clientSocket, data, dataSize, 0);
+        }
+    }
+}
+void sendNewPlayerInfoToAllClients(SOCKET exceptSocket, const Player& newPlayer) {
+    uint packetType = hton_requestType(PLAYER_APPEND);
+    sendToEveryoneElse(exceptSocket, reinterpret_cast<char*>(&packetType), sizeof(packetType));
+
+    PlayerAppend playerInfo;
+    playerInfo.id = newPlayer.id;
+    playerInfo.color = newPlayer.color;
+    playerInfo.x = newPlayer.Position().x;
+    playerInfo.y = newPlayer.Position().y;
+
+    playerInfo.hton();
+    sendToEveryoneElse(exceptSocket, reinterpret_cast<char*>(&playerInfo), sizeof(PlayerAppend));
+}
 // 클라이언트를 목록에서 삭제하고 다른 클라이언트에게 알림
 void removeClient(SOCKET clientSocket) {
     std::lock_guard<std::mutex> lock(clientMutex);
@@ -124,8 +154,9 @@ void execute() {
                 //uint successMsg = LOGIN_SUCCESS;
                 //successMsg = hton_requestType(successMsg);
                 printf("Client [%s] 로그인 성공 (LOGIN_SUCCESS 전송)\n", req.clientName);
-
-                sendPlayerInfoToAllClients();
+                sendNewPlayerInfoToAllClients(newClient.clientSocket, newPlayer);
+                sendAllPlayerInfos(newClient.clientSocket);
+                //sendPlayerInfoToAllClients();
             }
         }
         else {
