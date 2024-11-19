@@ -125,6 +125,8 @@ struct LoginSuccess : public PacketContext {
 	float x, y;
 };
 
+
+
 struct TEST : public PacketContext
 {
 	int cnt;

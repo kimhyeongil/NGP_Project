@@ -117,10 +117,7 @@ int main() {
 
                 LoginSuccess playerInfo;
                 memcpy(&playerInfo, buf, sizeof(LoginSuccess));
-                playerInfo.id = ntohl(playerInfo.id);
-                playerInfo.color = ntohl(playerInfo.color);
-                playerInfo.x = ntohl(playerInfo.x);
-                playerInfo.y = ntohl(playerInfo.y);
+                playerInfo.ntoh();
                 std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
                     << ", Position: (" << playerInfo.x << ", " << playerInfo.y << ")\n";
             }
@@ -131,20 +128,18 @@ int main() {
 
             // 플레이어 정보 수신
 
-            retval = recv(sock, buf, sizeof(PlayerAppend), 0);
-            if (retval <= 0) {
-                std::cerr << "Failed to receive player info.\n";
-                closesocket(sock);
-                WSACleanup();
-                return -1;
-            }
+           //retval = recv(sock, buf, sizeof(PlayerAppend), 0);
+           //if (retval <= 0) {
+           //    std::cerr << "Failed to receive player info.\n";
+           //    closesocket(sock);
+           //    WSACleanup();
+           //    return -1;
+           //}
 
             PlayerAppend playerInfo;
+            playerInfo.Recv(sock);
             memcpy(&playerInfo, buf, sizeof(PlayerAppend));
-            playerInfo.id = ntohl(playerInfo.id);
-            playerInfo.color = ntohl(playerInfo.color);
-            playerInfo.x = ntohl(playerInfo.x);
-            playerInfo.y = ntohl(playerInfo.y);
+            playerInfo.ntoh();
             std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
                 << ", Position: (" << playerInfo.x << ", " << playerInfo.y << ")\n";
 

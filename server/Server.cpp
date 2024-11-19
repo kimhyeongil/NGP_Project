@@ -1,22 +1,18 @@
 #include "server.h"
-#include <thread>
 #include <string>
 #include <cstring>
-#include <algorithm>
-#include <vector>
-#include <deque>
-#include <mutex>
-#include "../SFML/include/SFML/System.hpp"
 #define SERVERPORT 9000
 #define BUFSIZE 512
 
 std::vector<ClientInfo> clientInfos;
 std::deque<QueueBasket> requestQueue;
 std::vector<Player> players;
+
 std::mutex clientCountMutex;
 std::mutex queueMutex;
 std::mutex clientMutex;
 std::mutex playerMutex;
+
 int client_count = 0;
 uint hton_requestType(uint type) {
     return static_cast<uint>(htonl(static_cast<int>(type)));
@@ -76,6 +72,7 @@ void sendAllPlayerInfos(SOCKET clientSocket) {
 
     send(clientSocket, allPlayerData.data(), allPlayerData.size(), 0);
 }
+//
 void sendToEveryoneElse(SOCKET exceptSocket, const char* data, int dataSize) {
     std::lock_guard<std::mutex> lock(clientMutex);
     for (const auto& client : clientInfos) {
@@ -93,9 +90,13 @@ void sendNewPlayerInfoToAllClients(SOCKET exceptSocket, const Player& newPlayer)
     playerInfo.color = newPlayer.color;
     playerInfo.x = newPlayer.Position().x;
     playerInfo.y = newPlayer.Position().y;
-
-    playerInfo.hton();
-    sendToEveryoneElse(exceptSocket, reinterpret_cast<char*>(&playerInfo), sizeof(PlayerAppend));
+    
+    std::lock_guard<std::mutex> lock(clientMutex);
+    for (const auto& client : clientInfos) {
+        if (exceptSocket != client.clientSocket) {
+            playerInfo.Send(client.clientSocket);
+        }
+    }
 }
 // 클라이언트를 목록에서 삭제하고 다른 클라이언트에게 알림
 void removeClient(SOCKET clientSocket) {
@@ -138,7 +139,7 @@ void execute() {
 
                 Player newPlayer;
                 newPlayer.id = newClient.id;
-                newPlayer.shape.setPosition(rand() % 800, rand() % 600);
+                newPlayer.shape.setPosition(rand() % 2000, rand() % 2000);
                 int randomIndex = std::rand() % colors.size();
                 newPlayer.color = randomIndex;
 
@@ -150,7 +151,7 @@ void execute() {
                     std::lock_guard<std::mutex> playerLock(playerMutex);
                     players.push_back(newPlayer);
                 }
-
+               
                 //uint successMsg = LOGIN_SUCCESS;
                 //successMsg = hton_requestType(successMsg);
                 printf("Client [%s] 로그인 성공 (LOGIN_SUCCESS 전송)\n", req.clientName);
@@ -201,30 +202,41 @@ void processClient(SOCKET client_sock) {
         }
     }
 }
-
-int main(int argc, char* argv[]) {
-    WSADATA wsa;
-    WSAStartup(MAKEWORD(2, 2), &wsa);
-
-    SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-    sockaddr_in serveraddr;
-    memset(&serveraddr, 0, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
-    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serveraddr.sin_port = htons(SERVERPORT);
-    bind(listen_sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
-    listen(listen_sock, SOMAXCONN);
-
-    std::thread executeThread(execute);
-    executeThread.detach();
-
-    while (true) {
-        SOCKET client_sock = accept(listen_sock, nullptr, nullptr);
-        std::thread clientThread(processClient, client_sock);
-        clientThread.detach();
-    }
-
-    closesocket(listen_sock);
-    WSACleanup();
-    return 0;
+void err_quit(const char* msg)
+{
+    LPVOID lpMsgBuf;
+    FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL, WSAGetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (char*)&lpMsgBuf, 0, NULL);
+    MessageBoxA(NULL, (const char*)lpMsgBuf, msg, MB_ICONERROR);
+    LocalFree(lpMsgBuf);
+    exit(1);
 }
+//int main(int argc, char* argv[]) {
+//    WSADATA wsa;
+//    WSAStartup(MAKEWORD(2, 2), &wsa);
+//    
+//    SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+//    sockaddr_in serveraddr;
+//    memset(&serveraddr, 0, sizeof(serveraddr));
+//    serveraddr.sin_family = AF_INET;
+//    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+//    serveraddr.sin_port = htons(SERVERPORT);
+//    bind(listen_sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+//    listen(listen_sock, SOMAXCONN);
+//
+//    std::thread executeThread(execute);
+//    executeThread.detach();
+//
+//    while (true) {
+//        SOCKET client_sock = accept(listen_sock, nullptr, nullptr);
+//        std::thread clientThread(processClient, client_sock);
+//        clientThread.detach();
+//    }
+//
+//    closesocket(listen_sock);
+//    WSACleanup();
+//    return 0;
+//}

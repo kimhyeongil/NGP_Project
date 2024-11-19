@@ -140,6 +140,7 @@
     <ClCompile Include="..\Client\Game.cpp" />
     <ClCompile Include="..\Client\Random.cpp" />
     <ClCompile Include="..\Client\Scene.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -149,6 +150,7 @@
     <ClInclude Include="..\Client\GameCommon.h" />
     <ClInclude Include="..\Client\Random.h" />
     <ClInclude Include="..\Client\Scene.h" />
+    <ClInclude Include="Command.h" />
     <ClInclude Include="server.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
