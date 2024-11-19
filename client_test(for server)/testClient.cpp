@@ -91,34 +91,18 @@ int main() {
         responseType = ntoh_requestType(responseType);
 
         if (responseType == LOGIN_SUCCESS) {
-            // 플레이어 수 수신
-            //retval = recv(sock, buf, sizeof(uint), 0);
-            //if (retval <= 0) {
-            //    std::cerr << "Failed to receive player count.\n";
-            //    closesocket(sock);
-            //    WSACleanup();
-            //    return -1;
-            //}
+            
             PlayerCount cnt;
             cnt.Recv(sock);
-            //memcpy(&playerCount, buf, sizeof(uint));
-            //playerCount = ntohl(playerCount);
+            
 
             std::cout << "Player Count: " << cnt.cnt << std::endl;
 
             // 플레이어 정보 수신
             for (uint i = 0; i < cnt.cnt; ++i) {
-                retval = recv(sock, buf, sizeof(LoginSuccess), 0);
-                if (retval <= 0) {
-                    std::cerr << "Failed to receive player info.\n";
-                    closesocket(sock);
-                    WSACleanup();
-                    return -1;
-                }
-
                 LoginSuccess playerInfo;
-                memcpy(&playerInfo, buf, sizeof(LoginSuccess));
-                playerInfo.ntoh();
+                playerInfo.Recv(sock);
+                
                 std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
                     << ", Position: (" << playerInfo.x << ", " << playerInfo.y << ")\n";
             }
@@ -131,8 +115,7 @@ int main() {
 
             PlayerAppend playerInfo;
             playerInfo.Recv(sock);
-            memcpy(&playerInfo, buf, sizeof(PlayerAppend));
-            playerInfo.ntoh();
+            
             std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
                 << ", Position: (" << playerInfo.x << ", " << playerInfo.y << ")\n";
 

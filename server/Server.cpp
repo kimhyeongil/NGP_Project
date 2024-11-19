@@ -73,8 +73,10 @@ void sendAllPlayerInfos(SOCKET clientSocket) {
 
         allPlayerData.insert(allPlayerData.end(), reinterpret_cast<char*>(&playerInfo), reinterpret_cast<char*>(&playerInfo) + sizeof(LoginSuccess));
     }
+    LoginSuccess players;
+    players.AllSend(clientSocket, allPlayerData.data(), allPlayerData.size());
+    //send(clientSocket, allPlayerData.data(), allPlayerData.size(), 0);
 
-    send(clientSocket, allPlayerData.data(), allPlayerData.size(), 0);
 }
 //
 void sendToEveryoneElse(SOCKET exceptSocket, const char* data, int dataSize) {

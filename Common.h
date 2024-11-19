@@ -2,6 +2,7 @@
 #include <winsock2.h>
 #include <memory>
 #include <any>
+#include <vector>
 
 #undef min
 #undef max
@@ -13,11 +14,12 @@ struct PacketContext {
 	virtual void Recv(SOCKET sock) = 0;
 	virtual void ntoh() = 0;
 	virtual void hton() = 0;
+	virtual void AllSend(SOCKET sock, const char* data, int dataSize) = 0;
 };
 
 struct PlayerInput :public PacketContext {
 	PlayerInput(int id = 0, float x = 0, float y = 0) :id{ id }, x{ x }, y{ y } {}
-
+	void AllSend(SOCKET sock, const char* data, int dataSize)override {}
 	void Send(SOCKET sock) override
 	{
 		PlayerInput temp = *this;
@@ -51,6 +53,7 @@ struct PlayerInput :public PacketContext {
 };
 
 struct PlayerAppend : public PacketContext{
+	void AllSend(SOCKET sock, const char* data, int dataSize)override {}
 	void Send(SOCKET sock) override
 	{
 		PlayerAppend temp = *this;
@@ -89,13 +92,11 @@ struct PlayerAppend : public PacketContext{
 
 
 struct LoginSuccess : public PacketContext {
-	void Send(SOCKET sock) override
+	void AllSend(SOCKET sock, const char* data, int dataSize) override
 	{
-		LoginSuccess temp = *this;
-		temp.hton();
-		send(sock, (char*)&temp, sizeof(LoginSuccess), 0);
+		send(sock, data, dataSize, 0);
 	}
-
+	void Send(SOCKET sock)override {}
 	void Recv(SOCKET sock) override
 	{
 		LoginSuccess temp;
@@ -129,6 +130,7 @@ struct LoginSuccess : public PacketContext {
 
 struct PlayerCount : public PacketContext
 {
+	void AllSend(SOCKET sock, const char* data, int dataSize) override {}
 	void Send(SOCKET sock) override
 	{
 		PlayerCount temp = *this;
@@ -161,8 +163,7 @@ enum PACKET_TYPE : uint
 	PLAYER_INPUT = 1
 	, LOGIN_SUCCESS
 	, LOGIN_TRY
-	,
-	PLAYER_APPEND
+	,PLAYER_APPEND
 
 };
 
