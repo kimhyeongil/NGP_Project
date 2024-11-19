@@ -108,11 +108,7 @@ int main() {
             }
         }
         if (responseType == PLAYER_APPEND) {
-            // 플레이어 수 수신
-
-
             
-
             PlayerAppend playerInfo;
             playerInfo.Recv(sock);
             

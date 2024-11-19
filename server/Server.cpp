@@ -56,9 +56,6 @@ void sendAllPlayerInfos(SOCKET clientSocket) {
     uint packetType = hton_requestType(LOGIN_SUCCESS);
     send(clientSocket, reinterpret_cast<char*>(&packetType), sizeof(packetType), 0);
 
-    //uint playerCount = htonl(players.size());
-    //send(clientSocket, reinterpret_cast<char*>(&playerCount), sizeof(playerCount), 0);
-
     PlayerCount cnt;
     cnt.cnt = players.size();
     cnt.Send(clientSocket);
@@ -75,7 +72,6 @@ void sendAllPlayerInfos(SOCKET clientSocket) {
     }
     LoginSuccess players;
     players.AllSend(clientSocket, allPlayerData.data(), allPlayerData.size());
-    //send(clientSocket, allPlayerData.data(), allPlayerData.size(), 0);
 
 }
 //
@@ -157,7 +153,8 @@ void execute() {
                 }
                 {
                     std::lock_guard<std::mutex> playerLock(playerMutex);
-                    players.push_back(newPlayer);
+                    players.insert(players.begin(), newPlayer);
+                    //players.push_back(newPlayer);
                 }
                
                 //uint successMsg = LOGIN_SUCCESS;
