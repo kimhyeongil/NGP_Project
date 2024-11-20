@@ -1,6 +1,7 @@
 #include <print>
 #include <iostream>
 #include <algorithm>
+#include <chrono>
 #include "Server.h"
 #include "Common.h"
 #include "Random.h"
@@ -67,21 +68,26 @@ void Server::AcceptClient()
 void Server::Run()
 {
 	// 업데이트, 충돌 처리 등 필요
+	auto start = chrono::high_resolution_clock::now();
 	while (true)
 	{
-		Update(1);
+		auto end = chrono::high_resolution_clock::now();
+		double deltaTime = chrono::duration_cast<chrono::nanoseconds>(end - start).count() * 1e-9;
+		start = end;
+		Update(deltaTime);
 		CheckCollision();
 	}
 }
 
 void Server::CheckCollision()
 {
-
 }
 
 void Server::Update(double deltaTime)
 {
-
+	for (auto& player : players) {
+		player->Update(deltaTime);
+	}
 }
 
 void Server::ProcessClient(SOCKET client_sock)
@@ -234,7 +240,7 @@ void Server::Excute()
 			auto iter = find_if(players.begin(), players.end(), [&](const auto& player) {return player->id == context->id; });
 			if (iter != players.end()) {
 				const auto& player = *iter;
-				player->SetDestination(sf::Vector2f(player->Position().x + context->x, player->Position().y + context->y));
+				player->SetDestination(player->Position().x + context->x, player->Position().y + context->y);
 				auto packet = make_shared<PlayerInput>(player->id, player->destination.x, player->destination.y);
 				uint type = htonl(PACKET_TYPE::PLAYER_INPUT);
 				for (auto sock : clients) {
