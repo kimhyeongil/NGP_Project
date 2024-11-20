@@ -39,6 +39,11 @@ void PlayScene::HandleEvent(const sf::Event& event)
 		event.mouseButton.button == sf::Mouse::Left) {
 		auto destination = Game::Instance().WorldMouse(Vector2i{ event.mouseButton.x, event.mouseButton.y });
 		player->SetDestination(destination);
+		auto dir = destination - player->Position();
+		PACKET packet;
+		packet.type = PACKET_TYPE::PLAYER_INPUT;
+		packet.context = make_shared<PlayerInput>(player->id, dir.x, dir.y);
+		Game::Instance().Send(packet);
 	}
 }
 
@@ -53,15 +58,30 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		entities.clear();
 		for (int i = 1; i < context->datas.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->datas[i]));
-			cout << context->datas[i].name << endl;
 		}
 	}
 	break;
 	case PACKET_TYPE::PLAYER_APPEND:
 	{
 		auto context = static_pointer_cast<PlayerAppend>(packet.context);
-		cout << "append" << endl;
 		entities.emplace_back(make_unique<Player>(*context));
+	}
+	break;
+	case PACKET_TYPE::PLAYER_INPUT:
+	{
+		auto context = static_pointer_cast<PlayerInput>(packet.context);
+		if (player->id == context->id) {
+			player->SetDestination(context->x, context->y);
+		}
+		else {
+			auto iter = find_if(entities.begin(), entities.end(), [&](const auto& entity) {return entity->id == context->id; });
+			if (iter != entities.end()) {
+				if (Player* enemy = dynamic_cast<Player*>((*iter).get()); enemy != nullptr) {
+					enemy->SetDestination(context->x, context->y);
+				}
+			}
+
+		}
 	}
 	break;
 	default:

@@ -93,6 +93,10 @@ void ClientNetworkManager::Recv()
 			packet.context = make_shared<LoginSuccess>();
 		}
 		break;
+		case PACKET_TYPE::PLAYER_INPUT:
+		{
+			packet.context = make_shared<PlayerInput>();
+		}
 		default:
 			break;
 		}

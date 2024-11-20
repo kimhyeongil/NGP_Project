@@ -29,6 +29,8 @@ public:
 	void Update(double deltaTime) override;
 
 	void SetDestination(const sf::Vector2f&);
+	void SetDestination(float x, float y);
+
 	void SetPosition(const sf::Vector2f&);
 
 	char name[16];

@@ -59,6 +59,11 @@ void Player::SetDestination(const sf::Vector2f& dest)
 	destination = dest;
 }
 
+void  Player::SetDestination(float x, float y)
+{
+	SetDestination(sf::Vector2f(x, y));
+}
+
 void Player::SetPosition(const sf::Vector2f& pos)
 {
 	destination = pos;

@@ -6,7 +6,8 @@ using uint = unsigned int;
 
 enum class CMD_TYPE : uint {
 	LOGIN_SUCCESS = 1,
-	PLAYER_APPEND
+	PLAYER_APPEND,
+	PLAYER_INPUT
 };
 
 struct Command {
@@ -28,4 +29,9 @@ struct CMD_LoginSuccess {
 	CMD_LoginSuccess(SOCKET sock) : appendSock{ sock } {}
 
 	SOCKET appendSock;
+};
+
+struct CMD_PlayerInput {
+	int id;
+	float x, y;
 };

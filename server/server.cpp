@@ -60,7 +60,6 @@ void Server::AcceptClient()
 		if (client_sock == INVALID_SOCKET) {
 			break;
 		}
-		clients.emplace_back(client_sock);
 		thread(&Server::ProcessClient, this, client_sock).detach();
 	}
 }
@@ -115,28 +114,36 @@ void Server::ProcessClient(SOCKET client_sock)
 
 	uint type;
 	while (true) {
-		//if (recv(client_sock, (char*)&type, sizeof(uint), MSG_WAITALL) == SOCKET_ERROR) {
-		//	break;
-		//}
-		//type = ntohl(type);
+		if (recv(client_sock, (char*)&type, sizeof(uint), MSG_WAITALL) == SOCKET_ERROR) {
+			break;
+		}
+		type = ntohl(type);
 
-		//// 서버가 클라에게 받아야 할 내용 PLAYER_INPUT 수신은 완 PLAYER_INPUT 재송신 필요
-		//switch (type) {
-		//case PACKET_TYPE::PLAYER_INPUT: 
-		//{
-		//	PlayerInput input;
-		//	if (recv(client_sock, (char*)&input, sizeof(PlayerInput), MSG_WAITALL) == SOCKET_ERROR) {
-		//		break;
-		//	}
-		//	input.ntoh();
-		//	ioLock.lock();
-		//	print("[TCP 서버] 클라이언트 입력: IP 주소 = {}, 포트 번호 = {}, 위치 ({}, {})\n", addr, ntohs(clientaddr.sin_port), input.x, input.y);
-		//	ioLock.unlock();
-		//}
-		//break;
-		//default:
-		//	break;
-		//}
+		// 서버가 클라에게 받아야 할 내용 PLAYER_INPUT 수신은 완 PLAYER_INPUT 재송신 필요
+		switch (type) {
+		case PACKET_TYPE::PLAYER_INPUT: 
+		{
+			auto input = make_shared<PlayerInput>();
+			input->Recv(client_sock);
+			ioLock.lock();
+			print("[TCP 서버] 클라이언트 입력: IP 주소 = {}, 포트 번호 = {}, 위치 ({}, {})\n", addr, ntohs(clientaddr.sin_port), input->x, input->y);
+			ioLock.unlock();
+			auto cmd = make_unique<Command>();
+			cmd->type = CMD_TYPE::PLAYER_INPUT;
+			auto context = make_shared<CMD_PlayerInput>();
+			context->id = input->id;
+			context->x = input->x;
+			context->y = input->y;
+			cmd->context = context;
+			excuteLock.lock();
+			excuteQueue.emplace(move(cmd));
+			cv.notify_all();
+			excuteLock.unlock();
+		}
+		break;
+		default:
+			break;
+		}
 	}
 
 	ioLock.lock();
@@ -146,16 +153,17 @@ void Server::ProcessClient(SOCKET client_sock)
 void Server::Excute()
 {
 	while (true) {
-		unique_lock<mutex> lock(mutexes[EXCUTE]);
-		cv.wait(lock, [&] {return !excuteQueue.empty(); });
+		unique_lock<mutex> queueLock(mutexes[EXCUTE]);
+		cv.wait(queueLock, [&] {return !excuteQueue.empty(); });
 		auto cmd = move(excuteQueue.front());
 		excuteQueue.pop();
-		lock.unlock();
+		queueLock.unlock();
 		
 		switch (cmd->type)
 		{
 		case CMD_TYPE::LOGIN_SUCCESS:
 		{
+			cout << "login" << endl;
 			auto context = static_pointer_cast<CMD_LoginSuccess>(cmd->context);
 			auto player = make_unique<Player>();
 			player->id = newID++;
@@ -185,17 +193,16 @@ void Server::Excute()
 			type = htonl(type);
 			send(context->appendSock, (char*)&type, sizeof(uint), 0);
 			packet->Send(context->appendSock);
-			lock.lock();
+			queueLock.lock();
 			excuteQueue.emplace(move(newCMD));
-			lock.unlock();
+			queueLock.unlock();
 		}
 		break;
 		case CMD_TYPE::PLAYER_APPEND:
 		{
-			cout << excuteQueue.size() << endl;
 			auto context = static_pointer_cast<CMD_PlayerAppend>(cmd->context);
 			auto packet = make_shared<PlayerAppend>();
-			unique_lock<mutex> lock(mutexes[ENTITIES]);
+			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
 			auto iter = find_if(players.begin(), players.end(), [&](const auto& player) {return player->id == context->id; });
 			if (iter != players.end()) {
 				const auto& player = *iter;
@@ -204,14 +211,38 @@ void Server::Excute()
 				packet->x = player->Position().x;
 				packet->y = player->Position().y;
 				memcpy(packet->name, player->name, 16);
-				lock.unlock();
+				entityLock.unlock();
 				uint type = htonl(PACKET_TYPE::PLAYER_APPEND);
+				cout << "append " << context->appendSock << endl;
 				for (auto sock : clients) {
+					cout << "sock " << sock << endl;
 					if (sock != context->appendSock) {
 						send(sock, (char*)&type, sizeof(uint), 0);
 						packet->Send(sock);
 					}
 				}
+			}
+			else {
+				entityLock.unlock();
+			}
+		}
+		break;
+		case CMD_TYPE::PLAYER_INPUT:
+		{
+			auto context = static_pointer_cast<CMD_PlayerInput>(cmd->context);
+			unique_lock<mutex> lock(mutexes[ENTITIES]);
+			auto iter = find_if(players.begin(), players.end(), [&](const auto& player) {return player->id == context->id; });
+			if (iter != players.end()) {
+				const auto& player = *iter;
+				player->SetDestination(sf::Vector2f(player->Position().x + context->x, player->Position().y + context->y));
+				auto packet = make_shared<PlayerInput>(player->id, player->destination.x, player->destination.y);
+				uint type = htonl(PACKET_TYPE::PLAYER_INPUT);
+				for (auto sock : clients) {
+					send(sock, (char*)&type, sizeof(uint), 0);
+					packet->Send(sock);
+				}
+				lock.unlock();
+
 			}
 			else {
 				lock.unlock();
