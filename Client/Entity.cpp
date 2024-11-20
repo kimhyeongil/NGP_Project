@@ -46,6 +46,7 @@ Player::Player(const PlayerAppend& info)
 {
 	color = info.color;
 	id = info.id;
+	memcpy(name, info.name, 16);
 	shape.setPosition(info.x, info.y);
 	shape.setRadius(size);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
@@ -85,4 +86,34 @@ void Player::Update(double deltaTime)
 		shape.setPosition(position);
 	}
 	
+}
+
+void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	target.draw(shape, states);
+
+	// 텍스트를 그릴 준비
+	static sf::Font font;
+	static bool isFontLoaded = font.loadFromFile("consola.ttf");
+	if (!isFontLoaded) {
+		return;
+	}
+
+	// 텍스트 설정
+	sf::Text text;
+	text.setFont(font);
+	text.setString(name);
+	text.setCharacterSize(size / 2);
+	text.setFillColor(sf::Color::Black);
+
+	// 텍스트의 중심을 설정
+	sf::FloatRect textBounds = text.getLocalBounds();
+	text.setOrigin(textBounds.worldWidth / 2.f, textBounds.worldHeight / 2.f);
+
+	// 텍스트를 플레이어의 중앙에 배치
+	sf::Vector2f playerCenter = Position();
+	text.setPosition(playerCenter);
+
+	// 텍스트를 그린다
+	target.draw(text, states);
 }

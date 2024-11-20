@@ -33,6 +33,8 @@ public:
 
 	void SetPosition(const sf::Vector2f&);
 
+	void draw(sf::RenderTarget&, sf::RenderStates) const override;
+
 	char name[16];
 	sf::Vector2f destination;
 	float speed = 200;
