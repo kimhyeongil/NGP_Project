@@ -243,7 +243,7 @@ private:
 ///    // Clear the whole window before rendering a new frame
 ///    window.clear();
 ///
-///    // Draw some graphical entities
+///    // Draw some graphical players
 ///    window.draw(sprite);
 ///    window.draw(circle);
 ///    window.draw(text);

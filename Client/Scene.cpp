@@ -35,18 +35,31 @@ PlayScene::PlayScene()
 
 void PlayScene::HandleEvent(const sf::Event& event)
 {
-	for (auto& entity : entities) {
-		entity->HandleInput(event);
+	if (event.type == sf::Event::MouseButtonPressed &&
+		event.mouseButton.button == sf::Mouse::Left) {
+		auto destination = Game::Instance().WorldMouse(Vector2i{ event.mouseButton.x, event.mouseButton.y });
+		player->SetDestination(destination);
 	}
-	player->HandleInput(event);
 }
 
 void PlayScene::HandlePacket(const PACKET& packet)
 {
-	for (auto& entity : entities) {
-		entity->HandleInput(packet);
+	switch (packet.type)
+	{
+	case PACKET_TYPE::LOGIN_SUCCESS:
+	{
+		auto recvPlayer = make_unique<Player>();
+		auto context = static_pointer_cast<LoginSuccess>(packet.context);
+		player = make_unique<Player>(context->datas.front());
+		entities.clear();
+		for (int i = 1; i < context->datas.size(); ++i) {
+			entities.emplace_back(make_unique<Player>(context->datas[i]));
+		}
 	}
-	player->HandleInput(packet);
+	break;
+	default:
+		break;
+	}
 }
 
 void PlayScene::Update(const sf::Time& time)

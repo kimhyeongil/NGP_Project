@@ -21,41 +21,29 @@ void Entity::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 Player::Player()
 	: Entity{}
-	, size{ shape.getRadius() }
+	, size{ startSize }
 {
+	shape.setRadius(size);
 	shape.setPosition(-1, -1);
+	shape.setOrigin(shape.getRadius(), shape.getRadius());
 }
 
-void Player::HandleInput(const sf::Event& event)
+Player::Player(const LoginSuccess::PlayerInfo& info)
 {
-	if (event.type == sf::Event::MouseButtonPressed &&
-		event.mouseButton.button == sf::Mouse::Left) {
-		destination = Game::Instance().WorldMouse(Vector2i{ event.mouseButton.x, event.mouseButton.y });
-		auto dir = destination - Position();
-		auto input = make_shared< PlayerInput>(id, dir.x, dir.y);
-		PACKET packet;
-		packet.type = PLAYER_INPUT;
-		packet.context = input;
-		Game::Instance().Send(packet);
-	}
+	memcpy(name, info.name, 16);
+	size = info.size;
+	color = info.color;
+	id = info.id;
+	shape.setPosition(info.x, info.y);
+	shape.setRadius(size);
+	shape.setOrigin(shape.getRadius(), shape.getRadius());
+	shape.setFillColor(colors[color]);
+	destination = Position();
 }
 
-void Player::HandleInput(const PACKET& packet)
+void Player::SetDestination(const sf::Vector2f& dest)
 {
-	switch (packet.type)
-	{
-	case PACKET_TYPE::PLAYER_APPEND:
-	{
-		auto context = any_cast<PlayerAppend>(packet.context);
-		color = context.color;
-		id = context.id;
-		shape.setPosition(context.x, context.y);
-		destination = Position();
-	}
-	break;
-	default:
-		break;
-	}
+	destination = dest;
 }
 
 void Player::Update(double deltaTime)

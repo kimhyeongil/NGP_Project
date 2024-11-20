@@ -1,7 +1,6 @@
 #pragma once
 #include <winsock2.h>
 #include <memory>
-#include <any>
 #include <vector>
 
 #undef min
@@ -14,12 +13,11 @@ struct PacketContext {
 	virtual void Recv(SOCKET sock) = 0;
 	virtual void ntoh() = 0;
 	virtual void hton() = 0;
-	virtual void AllSend(SOCKET sock, const char* data, int dataSize) = 0;
 };
 
 struct PlayerInput :public PacketContext {
 	PlayerInput(int id = 0, float x = 0, float y = 0) :id{ id }, x{ x }, y{ y } {}
-	void AllSend(SOCKET sock, const char* data, int dataSize)override {}
+
 	void Send(SOCKET sock) override
 	{
 		PlayerInput temp = *this;
@@ -53,7 +51,6 @@ struct PlayerInput :public PacketContext {
 };
 
 struct PlayerAppend : public PacketContext{
-	void AllSend(SOCKET sock, const char* data, int dataSize)override {}
 	void Send(SOCKET sock) override
 	{
 		PlayerAppend temp = *this;
@@ -90,79 +87,78 @@ struct PlayerAppend : public PacketContext{
 	float x, y;
 };
 
-
 struct LoginSuccess : public PacketContext {
-	void AllSend(SOCKET sock, const char* data, int dataSize) override
-	{
-		send(sock, data, dataSize, 0);
-	}
-	void Send(SOCKET sock)override {}
-	void Recv(SOCKET sock) override
-	{
-		LoginSuccess temp;
-		recv(sock, (char*)&temp, sizeof(LoginSuccess), 0);
-		*this = temp;
-		ntoh();
-	}
+	struct PlayerInfo {
+		PlayerInfo() = default;
+		PlayerInfo(const class Player&);
+		void ntoh()
+		{
+			id = ntohl(id);
+			color = ntohl(color);
+			uint tempX; memcpy(&tempX, &x, sizeof(float)); x = ntohf(tempX);
+			uint tempY; memcpy(&tempY, &y, sizeof(float)); y = ntohf(tempY);
+			uint tempSize; memcpy(&tempSize, &size, sizeof(float)); size = ntohf(tempSize);
+		}
 
-	void ntoh() override
-	{
-		id = ntohl(id);
-		color = ntohl(color);
-		uint tempx; memcpy(&tempx, &x, sizeof(float)); x = ntohf(tempx);
-		uint tempy; memcpy(&tempy, &y, sizeof(float)); y = ntohf(tempy);
-	}
+		void hton()
+		{
+			id = htonl(id);
+			color = htonl(color);
+			uint tempX = htonf(x); memcpy(&x, &tempX, sizeof(float));
+			uint tempY = htonf(y); memcpy(&y, &tempY, sizeof(float));
+			uint tempSize = htonf(size); memcpy(&size, &tempSize, sizeof(float));
+		}
 
-	void hton() override
-	{
-		id = htonl(id);
-		color = htonl(color);
-		uint tempx = htonf(x); memcpy(&x, &tempx, sizeof(float));
-		uint tempy = htonf(y); memcpy(&y, &tempy, sizeof(float));
-	}
+		int id;
+		char name[16];
+		float x, y;
+		int color;
+		float size;
+	};
 
-	int id;
-	int color;
-	float x, y;
-};
-
-
-
-struct PlayerCount : public PacketContext
-{
-	void AllSend(SOCKET sock, const char* data, int dataSize) override {}
 	void Send(SOCKET sock) override
 	{
-		PlayerCount temp = *this;
-		temp.hton();
-		send(sock, (char*)&temp, sizeof(PlayerCount), 0);
+		uint size = datas.size();
+		size = htonl(size);
+		send(sock, (char*)&size, sizeof(uint), 0);
+
+		hton();
+		send(sock, (char*)datas.data(), datas.size() * sizeof(PlayerInfo), 0);
 	}
 
 	void Recv(SOCKET sock) override
 	{
-		PlayerCount temp;
-		recv(sock, (char*)&temp, sizeof(PlayerCount), 0);
-		*this = temp;
+		uint size;
+		recv(sock, (char*)&size, sizeof(uint), 0);
+		size = ntohl(size);
+
+		datas.resize(size);
+		recv(sock, (char*)datas.data(), datas.size() * sizeof(PlayerInfo), 0);
 		ntoh();
 	}
 
 	void ntoh() override
 	{
-		cnt = ntohl(cnt);
+		for (auto& data : datas) {
+			data.ntoh();
+		}
 	}
 
 	void hton() override
 	{
-		cnt = htonl(cnt);
+		for (auto& data : datas) {
+			data.hton();
+		}
 	}
-	int cnt;
+
+	std::vector<PlayerInfo> datas;
 };
+
 enum PACKET_TYPE : uint
 {
 
 	PLAYER_INPUT = 1
-	, LOGIN_SUCCESS
-	, LOGIN_TRY
+	,LOGIN_SUCCESS
 	,PLAYER_APPEND
 
 };

@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KHITestServer", "..\KHITest
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_test(for server)", "..\client_test(for server)\client_test(for server).vcxproj", "{6CF43890-F86A-48B6-9ADD-696DE383B404}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "..\Server\Server.vcxproj", "{FAC634B6-A8EA-489E-AEC9-B1976EE3F5A4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "..\server\server.vcxproj", "{FAC634B6-A8EA-489E-AEC9-B1976EE3F5A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

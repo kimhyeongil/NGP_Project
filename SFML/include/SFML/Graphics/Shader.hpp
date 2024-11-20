@@ -641,7 +641,7 @@ public:
     /// \brief Bind a shader for rendering
     ///
     /// This function is not part of the graphics API, it mustn't be
-    /// used when drawing SFML entities. It must be used only if you
+    /// used when drawing SFML players. It must be used only if you
     /// mix sf::Shader with OpenGL code.
     ///
     /// \code
@@ -763,7 +763,7 @@ private:
 ///
 /// Shaders are programs written using a specific language,
 /// executed directly by the graphics card and allowing
-/// to apply real-time operations to the rendered entities.
+/// to apply real-time operations to the rendered players.
 ///
 /// There are three kinds of shaders:
 /// \li %Vertex shaders, that process vertices

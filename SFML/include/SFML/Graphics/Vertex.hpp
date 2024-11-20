@@ -116,12 +116,12 @@ public:
 /// The vertex is the building block of drawing. Everything which
 /// is visible on screen is made of vertices. They are grouped
 /// as 2D primitives (triangles, quads, ...), and these primitives
-/// are grouped to create even more complex 2D entities such as
+/// are grouped to create even more complex 2D players such as
 /// sprites, texts, etc.
 ///
-/// If you use the graphical entities of SFML (sprite, text, shape)
+/// If you use the graphical players of SFML (sprite, text, shape)
 /// you won't have to deal with vertices directly. But if you want
-/// to define your own 2D entities, such as tiled maps or particle
+/// to define your own 2D players, such as tiled maps or particle
 /// systems, using vertices will allow you to get maximum performances.
 ///
 /// Example:

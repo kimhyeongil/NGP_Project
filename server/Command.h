@@ -1,11 +1,28 @@
+#pragma once
+#include <memory>
+#include <winsock2.h>
 
-struct ClientInfo {
-	int id;
-	SOCKET clientSocket;
+using uint = unsigned int;
+
+enum class CMD_TYPE : uint {
+	LOGIN_SUCCESS = 1,
+	PLAYER_APPEND
 };
 
-struct QueueBasket {
-	uint requestType = LOGIN_TRY;
-	SOCKET clientSocket;
-	char clientName[16];
+struct Command {
+	CMD_TYPE type;
+
+	std::shared_ptr<void> context;
+};
+
+struct CMD_PlayerAppend {
+	int id;
+	SOCKET appendSock;
+};
+
+struct CMD_LoginSuccess {
+	CMD_LoginSuccess() = default;
+	CMD_LoginSuccess(SOCKET sock) : appendSock{ sock } {}
+
+	SOCKET appendSock;
 };

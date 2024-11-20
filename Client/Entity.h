@@ -1,14 +1,12 @@
 #pragma once
 #include <vector>
-#include "../Common.h"
+#include "Common.h"
 #include "GameCommon.h"
 
 class Entity : public sf::Drawable {
 public:
 	Entity();
 
-	virtual void HandleInput(const sf::Event& event) {}
-	virtual void HandleInput(const PACKET& packet) {}
 	virtual void Update(double deltaTime) {}
 
 	sf::Vector2f Position() const { return shape.getPosition(); }
@@ -21,15 +19,17 @@ public:
 	int id;
 };
 
-class Player : public Entity
-{
+class Player : public Entity {
 public:
+	static constexpr float startSize = 20.f;
 	Player();
+	Player(const LoginSuccess::PlayerInfo&);
 
-	virtual void HandleInput(const sf::Event& event);
-	virtual void HandleInput(const PACKET& packet);
-	virtual void Update(double deltaTime);
-private:
+	void Update(double deltaTime) override;
+
+	void SetDestination(const sf::Vector2f&);
+
+	char name[16];
 	sf::Vector2f destination;
 	float speed = 200;
 	float size;

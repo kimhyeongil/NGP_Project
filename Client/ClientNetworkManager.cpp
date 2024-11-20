@@ -88,6 +88,11 @@ void ClientNetworkManager::Recv()
 			packet.context = make_shared<PlayerAppend>();
 		}
 		break;
+		case PACKET_TYPE::LOGIN_SUCCESS:
+		{
+			packet.context = make_shared<LoginSuccess>();
+		}
+		break;
 		default:
 			break;
 		}

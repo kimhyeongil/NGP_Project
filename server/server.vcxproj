@@ -18,6 +18,28 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Client\ClientNetworkManager.h" />
+    <ClInclude Include="..\Client\Entity.h" />
+    <ClInclude Include="..\Client\Game.h" />
+    <ClInclude Include="..\Client\GameCommon.h" />
+    <ClInclude Include="..\Client\Random.h" />
+    <ClInclude Include="..\Client\Scene.h" />
+    <ClInclude Include="..\Common.h" />
+    <ClInclude Include="Command.h" />
+    <ClInclude Include="Server.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Client\ClientNetworkManager.cpp" />
+    <ClCompile Include="..\Client\Entity.cpp" />
+    <ClCompile Include="..\Client\Game.cpp" />
+    <ClCompile Include="..\Client\Random.cpp" />
+    <ClCompile Include="..\Client\Scene.cpp" />
+    <ClCompile Include="..\Common.cpp" />
+    <ClCompile Include="Command.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Server.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -72,7 +94,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExecutablePath>../Client;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>../;../Client;$(IncludePath)</IncludePath>
+    <IncludePath>../SFML/include;../;../Client;$(IncludePath)</IncludePath>
+    <LibraryPath>../SFML/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -134,25 +157,6 @@
       <AdditionalDependencies>sfml-graphics-s.lib;sfml-window-s.lib;sfml-system-s.lib;sfml-main.lib;opengl32.lib;winmm.lib;gdi32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\Client\ClientNetworkManager.cpp" />
-    <ClCompile Include="..\Client\Entity.cpp" />
-    <ClCompile Include="..\Client\Game.cpp" />
-    <ClCompile Include="..\Client\Random.cpp" />
-    <ClCompile Include="..\Client\Scene.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="server.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\Client\ClientNetworkManager.h" />
-    <ClInclude Include="..\Client\Entity.h" />
-    <ClInclude Include="..\Client\Game.h" />
-    <ClInclude Include="..\Client\GameCommon.h" />
-    <ClInclude Include="..\Client\Random.h" />
-    <ClInclude Include="..\Client\Scene.h" />
-    <ClInclude Include="Command.h" />
-    <ClInclude Include="server.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

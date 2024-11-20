@@ -287,7 +287,7 @@ public:
     /// \brief Bind a vertex buffer for rendering
     ///
     /// This function is not part of the graphics API, it mustn't be
-    /// used when drawing SFML entities. It must be used only if you
+    /// used when drawing SFML players. It must be used only if you
     /// mix sf::VertexBuffer with OpenGL code.
     ///
     /// \code
