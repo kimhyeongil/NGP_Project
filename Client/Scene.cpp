@@ -84,6 +84,12 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		}
 	}
 	break;
+	case PACKET_TYPE::LOGOUT:
+	{
+		auto context = static_pointer_cast<Logout>(packet.context);
+		erase_if(entities, [&](auto& entity) {return entity->id == context->id; });
+	}
+	break;
 	default:
 		break;
 	}

@@ -16,20 +16,36 @@ struct PacketContext {
 };
 
 struct PlayerInput :public PacketContext {
-	PlayerInput(int id = 0, float x = 0, float y = 0) :id{ id }, x{ x }, y{ y } {}
+	struct Data {
+		Data() = default;
+		Data(const PlayerInput& context) : id{ context.id }, x{ context.x }, y{ context.y } {}
+		int id;
+		float x, y;
+	};
+
+	PlayerInput(int id = 0, float x = 0, float y = 0) : id{ id }, x{ x }, y{ y } {}
+
+	PlayerInput& operator=(const Data& data)
+	{
+		id = data.id;
+		x = data.x;
+		y = data.y;
+		return *this;
+	}
 
 	void Send(SOCKET sock) override
 	{
 		PlayerInput temp = *this;
 		temp.hton();
-		send(sock, (char*)&temp, sizeof(PlayerInput), 0);
+		Data data = temp;
+		send(sock, (char*)&data, sizeof(Data), 0);
 	}
 
 	void Recv(SOCKET sock) override
 	{
-		PlayerInput temp;
-		recv(sock, (char*)&temp, sizeof(PlayerInput), 0);
-		*this = temp;
+		Data data;
+		recv(sock, (char*)&data, sizeof(Data), 0);
+		*this = data;
 		ntoh();
 	}
 
@@ -46,23 +62,44 @@ struct PlayerInput :public PacketContext {
 		uint tempx = htonf(x); memcpy(&x, &tempx, sizeof(float)); 
 		uint tempy = htonf(y); memcpy(&y, &tempy, sizeof(float));
 	}
+
 	int id;
 	float x, y;
 };
 
 struct PlayerAppend : public PacketContext{
+	struct Data {
+		Data() = default;
+		Data(const PlayerAppend& context) : id{ context.id }, x{ context.x }, y{ context.y }, color{ context.color } { memcpy(name, context.name, 16); }
+		int id;
+		int color;
+		float x, y;
+		char name[16];
+	};
+
+	PlayerAppend& operator=(const Data& data)
+	{
+		id = data.id;
+		x = data.x;
+		y = data.y;
+		color = data.color;
+		memcpy(name, data.name, 16);
+		return *this;
+	}
+
 	void Send(SOCKET sock) override
 	{
 		PlayerAppend temp = *this;
 		temp.hton();
-		send(sock, (char*)&temp, sizeof(PlayerAppend), 0);
+		Data data = temp;
+		send(sock, (char*)&data, sizeof(Data), 0);
 	}
 
 	void Recv(SOCKET sock) override
 	{
-		PlayerAppend temp;
-		recv(sock, (char*)&temp, sizeof(PlayerAppend), 0);
-		*this = temp;
+		Data data;
+		recv(sock, (char*)&data, sizeof(Data), 0);
+		*this = data;
 		ntoh();
 	}
 
@@ -155,12 +192,33 @@ struct LoginSuccess : public PacketContext {
 	std::vector<PlayerInfo> datas;
 };
 
+struct Logout : public PacketContext {
+	void Send(SOCKET sock) override
+	{
+		int data = htonl(id);
+		send(sock, (char*)&data, sizeof(int), 0);
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		int data;
+		recv(sock, (char*)&data, sizeof(int), 0);
+		id = ntohl(data);
+	}
+
+	void ntoh() override {}
+
+	void hton() override {}
+	int id;
+};
+
 enum PACKET_TYPE : uint
 {
 
 	PLAYER_INPUT = 1
 	,LOGIN_SUCCESS
 	,PLAYER_APPEND
+	,LOGOUT
 
 };
 

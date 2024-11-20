@@ -85,6 +85,7 @@ void Server::CheckCollision()
 
 void Server::Update(double deltaTime)
 {
+	lock_guard<mutex> entityLock(mutexes[ENTITIES]);
 	for (auto& player : players) {
 		player->Update(deltaTime);
 	}
@@ -106,13 +107,10 @@ void Server::ProcessClient(SOCKET client_sock)
 
 	unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
 	clients.emplace_back(client_sock);
-	auto cmd = make_unique<Command>();
-	cmd->type = CMD_TYPE::LOGIN_SUCCESS;
-	auto context = make_shared<CMD_LoginSuccess>(client_sock);
-	cmd->context = context;
 	clientLock.unlock();
 
-
+	auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
+	cmd->context = make_shared<CMD_LoginSuccess>(client_sock);
 	unique_lock<mutex> excuteLock(mutexes[EXCUTE]);
 	excuteQueue.emplace(move(cmd));
 	cv.notify_all();
@@ -134,8 +132,7 @@ void Server::ProcessClient(SOCKET client_sock)
 			ioLock.lock();
 			print("[TCP 서버] 클라이언트 입력: IP 주소 = {}, 포트 번호 = {}, 위치 ({}, {})\n", addr, ntohs(clientaddr.sin_port), input->x, input->y);
 			ioLock.unlock();
-			auto cmd = make_unique<Command>();
-			cmd->type = CMD_TYPE::PLAYER_INPUT;
+			auto cmd = make_unique<Command>(CMD_TYPE::PLAYER_INPUT);
 			auto context = make_shared<CMD_PlayerInput>();
 			context->id = input->id;
 			context->x = input->x;
@@ -154,6 +151,14 @@ void Server::ProcessClient(SOCKET client_sock)
 
 	ioLock.lock();
 	print("[TCP 서버] 클라이언트 종료 : IP 주소 = {}, 포트 번호 = {}\n", addr, ntohs(clientaddr.sin_port));
+	ioLock.unlock();
+
+	cmd = make_unique<Command>(CMD_TYPE::LOGOUT);
+	cmd->context = make_shared<CMD_Logout>(client_sock);
+	excuteLock.lock();
+	excuteQueue.emplace(move(cmd));
+	cv.notify_all();
+	excuteLock.unlock();
 }
 
 void Server::Excute()
@@ -169,14 +174,9 @@ void Server::Excute()
 		{
 		case CMD_TYPE::LOGIN_SUCCESS:
 		{
-			cout << "login" << endl;
 			auto context = static_pointer_cast<CMD_LoginSuccess>(cmd->context);
 			auto player = make_unique<Player>();
-			player->id = newID++;
-			auto newCMD = make_unique<Command>();
-			auto newContext = make_shared<CMD_PlayerAppend>(context->appendSock, player->id);
-			newCMD->context = newContext;
-			newCMD->type = CMD_TYPE::PLAYER_APPEND;
+			player->id = context->appendSock;
 			player->color = Random::RandInt(0, colors.size() - 1);
 			//sf::Vector2f pos(Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize), Random::RandInt(Player::startSize, PlayScene::worldHeight - Player::startSize));
 			sf::Vector2f pos(Random::RandInt(100, 150), Random::RandInt(100, 150));
@@ -199,6 +199,12 @@ void Server::Excute()
 			type = htonl(type);
 			send(context->appendSock, (char*)&type, sizeof(uint), 0);
 			packet->Send(context->appendSock);
+
+
+			auto newCMD = make_unique<Command>(CMD_TYPE::PLAYER_APPEND);
+			auto newContext = make_shared<CMD_PlayerAppend>(context->appendSock);
+			newCMD->context = newContext;
+
 			queueLock.lock();
 			excuteQueue.emplace(move(newCMD));
 			queueLock.unlock();
@@ -209,7 +215,7 @@ void Server::Excute()
 			auto context = static_pointer_cast<CMD_PlayerAppend>(cmd->context);
 			auto packet = make_shared<PlayerAppend>();
 			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
-			auto iter = find_if(players.begin(), players.end(), [&](const auto& player) {return player->id == context->id; });
+			auto iter = find_if(players.begin(), players.end(), [&](const auto& player) {return player->id == context->appendSock; });
 			if (iter != players.end()) {
 				const auto& player = *iter;
 				packet->color = player->color;
@@ -219,9 +225,7 @@ void Server::Excute()
 				memcpy(packet->name, player->name, 16);
 				entityLock.unlock();
 				uint type = htonl(PACKET_TYPE::PLAYER_APPEND);
-				cout << "append " << context->appendSock << endl;
 				for (auto sock : clients) {
-					cout << "sock " << sock << endl;
 					if (sock != context->appendSock) {
 						send(sock, (char*)&type, sizeof(uint), 0);
 						packet->Send(sock);
@@ -253,6 +257,25 @@ void Server::Excute()
 			else {
 				lock.unlock();
 			}
+		}
+		break;
+		case CMD_TYPE::LOGOUT:
+		{
+			auto context = static_pointer_cast<CMD_Logout>(cmd->context);
+			auto payload = make_shared<Logout>();
+			payload->id = context->outSock;
+			uint type = htonl(PACKET_TYPE::LOGOUT);
+			unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
+			erase(clients, context->outSock);
+			for (auto& sock : clients) {
+				send(sock, (char*)&type, sizeof(uint), 0);
+				payload->Send(sock);
+			}
+			closesocket(context->outSock);
+			clientLock.unlock();
+
+			lock_guard<mutex> entityLock(mutexes[ENTITIES]);
+			erase_if(players, [&](auto& player) {return player->id == (int)context->outSock; });
 		}
 		break;
 		default:
