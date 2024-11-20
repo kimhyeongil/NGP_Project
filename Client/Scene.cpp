@@ -48,13 +48,20 @@ void PlayScene::HandlePacket(const PACKET& packet)
 	{
 	case PACKET_TYPE::LOGIN_SUCCESS:
 	{
-		auto recvPlayer = make_unique<Player>();
 		auto context = static_pointer_cast<LoginSuccess>(packet.context);
 		player = make_unique<Player>(context->datas.front());
 		entities.clear();
 		for (int i = 1; i < context->datas.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->datas[i]));
+			cout << context->datas[i].name << endl;
 		}
+	}
+	break;
+	case PACKET_TYPE::PLAYER_APPEND:
+	{
+		auto context = static_pointer_cast<PlayerAppend>(packet.context);
+		cout << "append" << endl;
+		entities.emplace_back(make_unique<Player>(*context));
 	}
 	break;
 	default:

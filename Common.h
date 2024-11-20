@@ -85,6 +85,7 @@ struct PlayerAppend : public PacketContext{
 	int id;
 	int color;
 	float x, y;
+	char name[16];
 };
 
 struct LoginSuccess : public PacketContext {

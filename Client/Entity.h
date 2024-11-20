@@ -24,10 +24,12 @@ public:
 	static constexpr float startSize = 20.f;
 	Player();
 	Player(const LoginSuccess::PlayerInfo&);
+	Player(const PlayerAppend&);
 
 	void Update(double deltaTime) override;
 
 	void SetDestination(const sf::Vector2f&);
+	void SetPosition(const sf::Vector2f&);
 
 	char name[16];
 	sf::Vector2f destination;

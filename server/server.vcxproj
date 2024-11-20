@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClInclude Include="..\Client\ClientNetworkManager.h" />
     <ClInclude Include="..\Client\Entity.h" />
-    <ClInclude Include="..\Client\Game.h" />
     <ClInclude Include="..\Client\GameCommon.h" />
     <ClInclude Include="..\Client\Random.h" />
     <ClInclude Include="..\Client\Scene.h" />
@@ -30,11 +29,8 @@
     <ClInclude Include="Server.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Client\ClientNetworkManager.cpp" />
     <ClCompile Include="..\Client\Entity.cpp" />
-    <ClCompile Include="..\Client\Game.cpp" />
     <ClCompile Include="..\Client\Random.cpp" />
-    <ClCompile Include="..\Client\Scene.cpp" />
     <ClCompile Include="..\Common.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="main.cpp" />

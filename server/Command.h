@@ -16,6 +16,9 @@ struct Command {
 };
 
 struct CMD_PlayerAppend {
+	CMD_PlayerAppend() = default;
+	CMD_PlayerAppend(SOCKET sock, int id) : appendSock{ sock }, id{ id } {}
+
 	int id;
 	SOCKET appendSock;
 };

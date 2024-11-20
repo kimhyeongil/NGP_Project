@@ -41,9 +41,28 @@ Player::Player(const LoginSuccess::PlayerInfo& info)
 	destination = Position();
 }
 
+Player::Player(const PlayerAppend& info)
+	: size{startSize}
+{
+	color = info.color;
+	id = info.id;
+	shape.setPosition(info.x, info.y);
+	shape.setRadius(size);
+	shape.setOrigin(shape.getRadius(), shape.getRadius());
+	shape.setFillColor(colors[color]);
+	destination = Position();
+}
+
+
 void Player::SetDestination(const sf::Vector2f& dest)
 {
 	destination = dest;
+}
+
+void Player::SetPosition(const sf::Vector2f& pos)
+{
+	destination = pos;
+	shape.setPosition(pos);
 }
 
 void Player::Update(double deltaTime)

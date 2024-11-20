@@ -1,5 +1,6 @@
 #include <print>
 #include <iostream>
+#include <algorithm>
 #include "Server.h"
 #include "Common.h"
 #include "Random.h"
@@ -147,7 +148,6 @@ void Server::Excute()
 	while (true) {
 		unique_lock<mutex> lock(mutexes[EXCUTE]);
 		cv.wait(lock, [&] {return !excuteQueue.empty(); });
-
 		auto cmd = move(excuteQueue.front());
 		excuteQueue.pop();
 		lock.unlock();
@@ -159,9 +159,15 @@ void Server::Excute()
 			auto context = static_pointer_cast<CMD_LoginSuccess>(cmd->context);
 			auto player = make_unique<Player>();
 			player->id = newID++;
+			auto newCMD = make_unique<Command>();
+			auto newContext = make_shared<CMD_PlayerAppend>(context->appendSock, player->id);
+			newCMD->context = newContext;
+			newCMD->type = CMD_TYPE::PLAYER_APPEND;
 			player->color = Random::RandInt(0, colors.size() - 1);
-			sf::Vector2f pos(Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize), Random::RandInt(Player::startSize, PlayScene::worldHeight - Player::startSize));
-			player->shape.setPosition(pos);
+			//sf::Vector2f pos(Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize), Random::RandInt(Player::startSize, PlayScene::worldHeight - Player::startSize));
+			sf::Vector2f pos(Random::RandInt(100, 150), Random::RandInt(100, 150));
+
+			player->SetPosition(pos);
 			// 나중에 로그인 시 받은 이름으로 변경할 예정
 			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
 			string name = "Player" + to_string(players.size());
@@ -173,18 +179,43 @@ void Server::Excute()
 			}
 			players.emplace_front(move(player));
 			entityLock.unlock();
-			cout << datas.size() << endl;
 			auto packet = make_shared<LoginSuccess>();
 			packet->datas = datas;
 			uint type = (uint)PACKET_TYPE::LOGIN_SUCCESS;
 			type = htonl(type);
 			send(context->appendSock, (char*)&type, sizeof(uint), 0);
 			packet->Send(context->appendSock);
+			lock.lock();
+			excuteQueue.emplace(move(newCMD));
+			lock.unlock();
 		}
 		break;
 		case CMD_TYPE::PLAYER_APPEND:
 		{
-
+			cout << excuteQueue.size() << endl;
+			auto context = static_pointer_cast<CMD_PlayerAppend>(cmd->context);
+			auto packet = make_shared<PlayerAppend>();
+			unique_lock<mutex> lock(mutexes[ENTITIES]);
+			auto iter = find_if(players.begin(), players.end(), [&](const auto& player) {return player->id == context->id; });
+			if (iter != players.end()) {
+				const auto& player = *iter;
+				packet->color = player->color;
+				packet->id = player->id;
+				packet->x = player->Position().x;
+				packet->y = player->Position().y;
+				memcpy(packet->name, player->name, 16);
+				lock.unlock();
+				uint type = htonl(PACKET_TYPE::PLAYER_APPEND);
+				for (auto sock : clients) {
+					if (sock != context->appendSock) {
+						send(sock, (char*)&type, sizeof(uint), 0);
+						packet->Send(sock);
+					}
+				}
+			}
+			else {
+				lock.unlock();
+			}
 		}
 		break;
 		default:
