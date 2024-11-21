@@ -18,6 +18,9 @@ ClientNetworkManager::ClientNetworkManager()
 	string serverIP;
 	cout << "¼­¹ö IP: ";
 	cin >> serverIP;
+	if (serverIP == "a") {
+		serverIP = "127.0.0.1";
+	}
 	struct sockaddr_in serveraddr;
 	memset(&serveraddr, 0, sizeof(serveraddr));
 	serveraddr.sin_family = AF_INET;

@@ -57,7 +57,9 @@ Player::Player(const PlayerAppend& info)
 
 void Player::SetDestination(const sf::Vector2f& dest)
 {
-	destination = dest;
+	
+	destination = Vector2f::Min(dest, Vector2f{ PlayScene::worldWidth - size, PlayScene::worldHeight - size });
+	destination = Vector2f::Max(destination, Vector2f{ size, size });
 }
 
 void  Player::SetDestination(float x, float y)
@@ -67,19 +69,23 @@ void  Player::SetDestination(float x, float y)
 
 void Player::SetPosition(const sf::Vector2f& pos)
 {
-	destination = pos;
-	shape.setPosition(pos);
+	auto position = pos;
+	position = Vector2f::Min(position, Vector2f{ PlayScene::worldWidth - size, PlayScene::worldHeight - size });
+	position = Vector2f::Max(position, Vector2f{ size, size });
+	shape.setPosition(position);
+	destination = position;
+
 }
 
 void Player::Update(double deltaTime)
 {
 	auto position = shape.getPosition();
-	if (Vector2f::Distance(position, destination) > 0.0001) {
+	if (Vector2f::Distance(position, destination) > 1e-5) {
 		auto dir = Vector2f::Normalize(destination - position);
 		auto distance = min(deltaTime * speed, Vector2f::Distance(position, destination));
 		shape.move(dir * distance);
 
-		position = shape.getPosition();
+		position = Position();
 		position = Vector2f::Min(position, Vector2f{ PlayScene::worldWidth - size, PlayScene::worldHeight - size });
 		position = Vector2f::Max(position, Vector2f{ size, size });
 

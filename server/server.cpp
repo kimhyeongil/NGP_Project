@@ -73,6 +73,10 @@ void Server::Run()
 	{
 		auto end = chrono::high_resolution_clock::now();
 		double deltaTime = chrono::duration_cast<chrono::nanoseconds>(end - start).count() * 1e-9;
+		while (deltaTime < 1e-4) {
+			end = chrono::high_resolution_clock::now();
+			deltaTime = chrono::duration_cast<chrono::nanoseconds>(end - start).count() * 1e-9;
+		}
 		start = end;
 		Update(deltaTime);
 		CheckCollision();
