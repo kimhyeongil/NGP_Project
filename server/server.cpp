@@ -103,11 +103,7 @@ void Server::CheckCollision()//추후 먹이구현시 충돌체크 구현계속
 			if (distance < combinedRadius) {
 				// 충돌 발생, CMD_CheckCollision 생성
 				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
-				auto context = make_shared<CMD_CheckCollision>(
-					player1->id, player2->id,
-					player1->Position().x, player1->Position().y,
-					player2->Position().x, player2->Position().y
-				);
+				auto context = make_shared<CMD_CheckCollision>(player1->id, player2->id);
 				cmd->context = context;
 
 				// Excute()로 전달
@@ -317,24 +313,33 @@ void Server::Excute()
 		case CMD_TYPE::CHECK_COLLISION:
 		{
 			auto context = static_pointer_cast<CMD_CheckCollision>(cmd->context);
-			int id1 = context->id1;
-			int id2 = context->id2;
-
+			
+			
 			unique_lock<mutex> lock(mutexes[ENTITIES]);
-			auto iter1 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == id1; });
-			auto iter2 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == id2; });
-
+			auto iter1 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == context->id1; });
+			auto iter2 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == context->id2; });
+			
 			if (iter1 != players.end() && iter2 != players.end()) {
 				auto& player1 = *iter1;
 				auto& player2 = *iter2;
-
+			
+				// 충돌 처리 로직: 사이즈 비교 후 작은 플레이어를 제거
+				if (player1->size > player2->size) {
+					player1->size += player2->size * 0.5f; // 패배자의 일부 크기를 승자가 흡수
+					players.erase(iter2);                 // 패배 플레이어 제거
+				}
+				else {
+					player2->size += player1->size * 0.5f;
+					players.erase(iter1);
+				}
+			
 				// 모든 클라이언트에 충돌 정보를 알림
-				auto packet = make_shared<CheckCollision>();
-				packet->id1 = id1;
-				packet->id2 = id2;
+				auto packet = make_shared<ConfirmCollision>();
+				packet->id1 = context->id1;
+				packet->id2 = context->id2;
 				uint type = htonl(PACKET_TYPE::CHECK_COLLISION);
-
-				lock.unlock();
+			
+				lock.unlock(); // 잠금 해제 후 클라이언트 통신 처리
 				unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
 				for (auto& sock : clients) {
 					send(sock, (char*)&type, sizeof(uint), 0);
@@ -343,6 +348,7 @@ void Server::Excute()
 			}
 		}
 		break;
+
 		default:
 			break;
 		}

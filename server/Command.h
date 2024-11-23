@@ -35,6 +35,7 @@ struct CMD_PlayerInput {
 struct CMD_Logout {
 	SOCKET outSock;
 };
+
 struct CMD_CheckCollision {
 	int id1;
 	int id2;

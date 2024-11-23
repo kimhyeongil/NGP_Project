@@ -125,15 +125,15 @@ struct PlayerAppend : public PacketContext{
 	char name[16];
 };
 
-struct CheckCollision : public PacketContext {
+struct ConfirmCollision : public PacketContext {
 	struct Data {
 		Data() = default;
-		Data(const CheckCollision& context) : id1{ context.id1 }, id2{ context.id2 } {}
+		Data(const ConfirmCollision& context) : id1{ context.id1 }, id2{ context.id2 } {}
 		int id1;
 		int id2;
 	};
 
-	CheckCollision& operator=(const Data& data)
+	ConfirmCollision& operator=(const Data& data)
 	{
 		id1 = data.id1;
 		id2 = data.id2;
@@ -142,7 +142,7 @@ struct CheckCollision : public PacketContext {
 
 	void Send(SOCKET sock) override
 	{
-		CheckCollision temp = *this;
+		ConfirmCollision temp = *this;
 		temp.hton();
 		Data data = temp;
 		send(sock, (char*)&data, sizeof(Data), 0);
