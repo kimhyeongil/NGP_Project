@@ -8,7 +8,8 @@ enum class CMD_TYPE : uint {
 	LOGIN_SUCCESS = 1,
 	PLAYER_APPEND,
 	PLAYER_INPUT,
-	LOGOUT
+	LOGOUT,
+	CHECK_COLLISION,
 };
 
 struct Command {
@@ -33,4 +34,8 @@ struct CMD_PlayerInput {
 
 struct CMD_Logout {
 	SOCKET outSock;
+};
+struct CMD_CheckCollision {
+	int id1;
+	int id2;
 };

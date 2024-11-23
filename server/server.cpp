@@ -83,8 +83,40 @@ void Server::Run()
 	}
 }
 
-void Server::CheckCollision()
+void Server::CheckCollision()//추후 먹이구현시 충돌체크 구현계속
 {
+	lock_guard<mutex> entityLock(mutexes[ENTITIES]);
+
+	// 충돌한 플레이어 간 데이터를 저장
+	for (auto it1 = players.begin(); it1 != players.end(); ++it1) {
+		for (auto it2 = next(it1); it2 != players.end(); ) {
+			auto& player1 = *it1;
+			auto& player2 = *it2;
+
+			// 두 플레이어 간 거리 계산
+			auto dx = player2->Position().x - player1->Position().x;
+			auto dy = player2->Position().y - player1->Position().y;
+			float distance = sqrt(dx * dx + dy * dy);
+
+			float combinedRadius = player1->size + player2->size;
+
+			if (distance < combinedRadius) {
+				// 충돌 발생, CMD_CheckCollision 생성
+				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
+				auto context = make_shared<CMD_CheckCollision>(
+					player1->id, player2->id,
+					player1->Position().x, player1->Position().y,
+					player2->Position().x, player2->Position().y
+				);
+				cmd->context = context;
+
+				// Excute()로 전달
+				lock_guard<mutex> executeLock(mutexes[EXCUTE]);
+				excuteQueue.emplace(move(cmd));
+				cv.notify_all();
+			}
+		}
+	}
 }
 
 void Server::Update(double deltaTime)
@@ -280,6 +312,11 @@ void Server::Excute()
 
 			lock_guard<mutex> entityLock(mutexes[ENTITIES]);
 			erase_if(players, [&](auto& player) {return player->id == (int)context->outSock; });
+		}
+		break;
+		case CMD_TYPE::CHECK_COLLISION:
+		{
+
 		}
 		break;
 		default:

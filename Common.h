@@ -125,6 +125,53 @@ struct PlayerAppend : public PacketContext{
 	char name[16];
 };
 
+struct CheckCollision : public PacketContext {
+	struct Data {
+		Data() = default;
+		Data(const CheckCollision& context) : id1{ context.id1 }, id2{ context.id2 } {}
+		int id1;
+		int id2;
+	};
+
+	CheckCollision& operator=(const Data& data)
+	{
+		id1 = data.id1;
+		id2 = data.id2;
+		return *this;
+	}
+
+	void Send(SOCKET sock) override
+	{
+		CheckCollision temp = *this;
+		temp.hton();
+		Data data = temp;
+		send(sock, (char*)&data, sizeof(Data), 0);
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		Data data;
+		recv(sock, (char*)&data, sizeof(Data), 0);
+		*this = data;
+		ntoh();
+	}
+
+	void ntoh() override
+	{
+		id1 = ntohl(id1);
+		id2 = ntohl(id2);
+	}
+
+	void hton() override
+	{
+		id1 = htonl(id1);
+		id2 = htonl(id2);
+		
+	}
+	int id1;
+	int id2;
+};
+
 struct LoginSuccess : public PacketContext {
 	struct PlayerInfo {
 		PlayerInfo() = default;
@@ -219,6 +266,7 @@ enum PACKET_TYPE : uint
 	,LOGIN_SUCCESS
 	,PLAYER_APPEND
 	,LOGOUT
+	,CHECK_COLLISION
 
 };
 
