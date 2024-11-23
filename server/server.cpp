@@ -316,7 +316,31 @@ void Server::Excute()
 		break;
 		case CMD_TYPE::CHECK_COLLISION:
 		{
+			auto context = static_pointer_cast<CMD_CheckCollision>(cmd->context);
+			int id1 = context->id1;
+			int id2 = context->id2;
 
+			unique_lock<mutex> lock(mutexes[ENTITIES]);
+			auto iter1 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == id1; });
+			auto iter2 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == id2; });
+
+			if (iter1 != players.end() && iter2 != players.end()) {
+				auto& player1 = *iter1;
+				auto& player2 = *iter2;
+
+				// 모든 클라이언트에 충돌 정보를 알림
+				auto packet = make_shared<CheckCollision>();
+				packet->id1 = id1;
+				packet->id2 = id2;
+				uint type = htonl(PACKET_TYPE::CHECK_COLLISION);
+
+				lock.unlock();
+				unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
+				for (auto& sock : clients) {
+					send(sock, (char*)&type, sizeof(uint), 0);
+					packet->Send(sock);
+				}
+			}
 		}
 		break;
 		default:
