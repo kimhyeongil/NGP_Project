@@ -321,17 +321,16 @@ void Server::Excute()
 		case CMD_TYPE::CHECK_COLLISION:
 		{
 			auto context = static_pointer_cast<CMD_CheckCollision>(cmd->context);
-			
-			
+
 			unique_lock<mutex> lock(mutexes[ENTITIES]);
 			auto iter1 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == context->id1; });
 			auto iter2 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == context->id2; });
-			
+
 			if (iter1 != players.end() && iter2 != players.end()) {
 				auto& player1 = *iter1;
 				auto& player2 = *iter2;
-			
-				// 충돌 처리 로직:추후상의 예정
+
+				// 충돌 처리 로직: 추후 상의후 변경
 				if (player1->size > player2->size) {
 					player1->size += player2->size * 0.5f; // 패배자의 일부 크기를 승자가 흡수
 					players.erase(iter2);                 // 패배 플레이어 제거
@@ -340,13 +339,13 @@ void Server::Excute()
 					player2->size += player1->size * 0.5f;
 					players.erase(iter1);
 				}
-			
+
 				// 모든 클라이언트에 충돌 정보를 알림
 				auto packet = make_shared<ConfirmCollision>();
 				packet->id1 = context->id1;
 				packet->id2 = context->id2;
 				uint type = htonl(PACKET_TYPE::CHECK_COLLISION);
-			
+
 				lock.unlock(); // 잠금 해제 후 클라이언트 통신 처리
 				unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
 				for (auto& sock : clients) {
@@ -356,6 +355,7 @@ void Server::Excute()
 			}
 		}
 		break;
+
 
 		default:
 			break;
