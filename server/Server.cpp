@@ -83,7 +83,7 @@ void Server::Run()
 	}
 }
 
-void Server::CheckCollision()//추후 먹이구현시 충돌체크 구현계속
+void Server::CheckCollision() //추후 먹이구현시 충돌체크 구현계속
 {
 	lock_guard<mutex> entityLock(mutexes[ENTITIES]);
 
@@ -99,8 +99,9 @@ void Server::CheckCollision()//추후 먹이구현시 충돌체크 구현계속
 			float distance = sqrt(dx * dx + dy * dy);
 
 			float combinedRadius = player1->size + player2->size;
-
+			
 			if (distance < combinedRadius) {
+				//printf("%f, %f\n", distance, combinedRadius);
 				// 충돌 발생, CMD_CheckCollision 생성
 				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
 				auto context = make_shared<CMD_CheckCollision>(player1->id, player2->id);
@@ -110,10 +111,17 @@ void Server::CheckCollision()//추후 먹이구현시 충돌체크 구현계속
 				lock_guard<mutex> executeLock(mutexes[EXCUTE]);
 				excuteQueue.emplace(move(cmd));
 				cv.notify_all();
+
+				// it2를 증가시키지 않고 계속 루프를 돌면 무한루프가 발생합니다.
+				++it2;
+			}
+			else {
+				++it2;
 			}
 		}
 	}
 }
+
 
 void Server::Update(double deltaTime)
 {
@@ -323,7 +331,7 @@ void Server::Excute()
 				auto& player1 = *iter1;
 				auto& player2 = *iter2;
 			
-				// 충돌 처리 로직: 사이즈 비교 후 작은 플레이어를 제거
+				// 충돌 처리 로직:추후상의 예정
 				if (player1->size > player2->size) {
 					player1->size += player2->size * 0.5f; // 패배자의 일부 크기를 승자가 흡수
 					players.erase(iter2);                 // 패배 플레이어 제거
