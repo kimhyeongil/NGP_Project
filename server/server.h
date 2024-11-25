@@ -44,6 +44,8 @@ private:
 
 	// 나중에 먹이 추가 시 그에 맞게 변경할 예정
 	std::list<std::unique_ptr<Player>> players;
+	std::vector<std::unique_ptr<Food>> foods;
+
 	int newID = 0;
 };
 

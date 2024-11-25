@@ -159,7 +159,6 @@
     <ClCompile Include="..\Client\Game.cpp" />
     <ClCompile Include="..\Client\Random.cpp" />
     <ClCompile Include="..\Client\Scene.cpp" />
-    <ClCompile Include="..\Common.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

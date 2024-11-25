@@ -17,10 +17,7 @@ Scene::Scene()
 }
 
 PlayScene::PlayScene()
-	:player{ make_unique<Player>() }
 {
-	view.setCenter(player->Position());
-
 	Color lineColor{ 128,128,128 };
 	float lineThickness = 2.5;
 	for (int x = 0; x < worldWidth; x += space) {
@@ -59,14 +56,14 @@ void PlayScene::HandlePacket(const PACKET& packet)
 	case PACKET_TYPE::LOGIN_SUCCESS:
 	{
 		auto context = static_pointer_cast<LoginSuccess>(packet.context);
-		player = make_unique<Player>(context->datas.front());
+		player = make_unique<Player>(context->players.front());
+		view.setCenter(player->Position());
 		entities.clear();
-		for (int i = 1; i < context->datas.size(); ++i) {
-			entities.emplace_back(make_unique<Player>(context->datas[i]));
+		for (const auto& info : context->foods) {
+			entities.emplace_back(make_unique<Food>(info));
 		}
-		for (int i = 0; i < 5000; ++i) {
-			entities.emplace_back(make_unique<Food>());
-			entities.back()->SetPosition(Random::RandInt(100, worldWidth - 100), Random::RandInt(100, worldHeight - 100));
+		for (int i = 1; i < context->players.size(); ++i) {
+			entities.emplace_back(make_unique<Player>(context->players[i]));
 		}
 	}
 	break;
