@@ -2,6 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
-#include <array>
+#include <vector>
 
-const std::array<sf::Color, 3> colors{ sf::Color::Red, sf::Color::Green, sf::Color::Blue };
+const std::vector<sf::Color> colors{ sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Cyan, sf::Color::Yellow, sf::Color::Magenta };

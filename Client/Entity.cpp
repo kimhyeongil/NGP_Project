@@ -14,9 +14,25 @@ Entity::Entity()
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 }
 
+void Entity::SetActive(bool newActive)
+{
+	if (newActive == active) {
+		return;
+	}
+	active = newActive;
+	if (active) {
+		OnActive();
+	}
+	else {
+		OnInactive();
+	}
+}
+
 void Entity::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	target.draw(shape, states);
+	if (Active()) {
+		target.draw(shape, states);
+	}
 }
 
 Player::Player()
@@ -54,7 +70,6 @@ Player::Player(const PlayerAppend& info)
 	destination = Position();
 }
 
-
 void Player::SetDestination(const sf::Vector2f& dest)
 {
 	
@@ -79,47 +94,69 @@ void Player::SetPosition(const sf::Vector2f& pos)
 
 void Player::Update(double deltaTime)
 {
-	auto position = shape.getPosition();
-	if (Vector2f::Distance(position, destination) > 1e-5) {
-		auto dir = Vector2f::Normalize(destination - position);
-		auto distance = min(deltaTime * speed, Vector2f::Distance(position, destination));
-		shape.move(dir * distance);
+	if (Active()) {
+		auto position = shape.getPosition();
+		if (Vector2f::Distance(position, destination) > 1e-5) {
+			auto dir = Vector2f::Normalize(destination - position);
+			auto distance = min(deltaTime * speed, Vector2f::Distance(position, destination));
+			shape.move(dir * distance);
 
-		position = Position();
-		position = Vector2f::Min(position, Vector2f{ PlayScene::worldWidth - size, PlayScene::worldHeight - size });
-		position = Vector2f::Max(position, Vector2f{ size, size });
+			position = Position();
+			position = Vector2f::Min(position, Vector2f{ PlayScene::worldWidth - size, PlayScene::worldHeight - size });
+			position = Vector2f::Max(position, Vector2f{ size, size });
 
-		shape.setPosition(position);
+			shape.setPosition(position);
+		}
 	}
-	
 }
 
 void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	target.draw(shape, states);
+	if (Active()) {
+		target.draw(shape, states);
 
-	// 텍스트를 그릴 준비
-	static sf::Font font;
-	static bool isFontLoaded = font.loadFromFile("consola.ttf");
-	if (!isFontLoaded) {
-		return;
+		// 텍스트를 그릴 준비
+		static sf::Font font;
+		static bool isFontLoaded = font.loadFromFile("consola.ttf");
+		if (!isFontLoaded) {
+			return;
+		}
+
+		// 텍스트 설정
+		sf::Text text;
+		text.setFont(font);
+		text.setString(name);
+		text.setCharacterSize(size / 2);
+		text.setFillColor(sf::Color::Black);
+
+		// 텍스트의 중심을 설정
+		sf::FloatRect textBounds = text.getLocalBounds();
+		text.setOrigin(textBounds.worldWidth / 2.f, textBounds.worldHeight / 2.f);
+
+		// 텍스트를 플레이어의 중앙에 배치
+		sf::Vector2f playerCenter = Position();
+		text.setPosition(playerCenter);
+
+		// 텍스트를 그린다
+		target.draw(text, states);
 	}
+}
 
-	// 텍스트 설정
-	sf::Text text;
-	text.setFont(font);
-	text.setString(name);
-	text.setCharacterSize(size / 2);
-	text.setFillColor(sf::Color::Black);
+void Food::OnActive()
+{
+	shape.setFillColor(Random::RandColor());
+	activeTime = 0;
+}
 
-	// 텍스트의 중심을 설정
-	sf::FloatRect textBounds = text.getLocalBounds();
-	text.setOrigin(textBounds.worldWidth / 2.f, textBounds.worldHeight / 2.f);
-
-	// 텍스트를 플레이어의 중앙에 배치
-	sf::Vector2f playerCenter = Position();
-	text.setPosition(playerCenter);
-
-	// 텍스트를 그린다
-	target.draw(text, states);
+void Food::Update(double deltaTime)
+{
+	if (Active()) {
+		activeTime += deltaTime;
+		auto color = shape.getFillColor();
+		color.a = 255 * (maxTime - activeTime) / maxTime;
+		shape.setFillColor(color);
+		if (activeTime > maxTime) {
+			//SetActive(false);
+		}
+	}
 }
