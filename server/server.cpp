@@ -39,7 +39,11 @@ Server::Server()
 		WSACleanup();
 		exit(-1);
 	}
-
+	foods.resize(1000);
+	for (auto& food : foods) {
+		food = make_unique<Food>();
+		food->SetPosition(Random::RandInt(Food::defaultSize, PlayScene::worldWidth - Food::defaultSize), Random::RandInt(Food::defaultSize, PlayScene::worldHeight - Food::defaultSize));
+	}
 	thread(&Server::Excute, this).detach();
 	thread(&Server::AcceptClient, this).detach();
 }
@@ -85,6 +89,35 @@ void Server::Run()
 
 void Server::CheckCollision()
 {
+<<<<<<< Updated upstream
+=======
+	lock_guard<mutex> entityLock(mutexes[ENTITIES]);
+
+	 //충돌한 플레이어 간 데이터를 저장
+	for (auto it1 = players.begin(); it1 != players.end(); ++it1) {
+		for (auto it2 = next(it1); it2 != players.end(); ++it2) {
+			auto& player1 = *it1;
+			auto& player2 = *it2;
+
+			float distance = sf::Vector2f::Distance(player1->Position(), player2->Position());
+
+			float combinedRadius = player1->size + player2->size;
+			
+			if (distance < combinedRadius) {
+				//printf("%f, %f\n", distance, combinedRadius);
+				// 충돌 발생, CMD_CheckCollision 생성
+				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
+				auto context = make_shared<CMD_CheckCollision>(player1->id, player2->id);
+				cmd->context = context;
+
+				// Excute()로 전달
+				lock_guard<mutex> executeLock(mutexes[EXCUTE]);
+				excuteQueue.emplace(move(cmd));
+				cv.notify_all();
+			}
+		}
+	}
+>>>>>>> Stashed changes
 }
 
 void Server::Update(double deltaTime)
@@ -92,6 +125,9 @@ void Server::Update(double deltaTime)
 	lock_guard<mutex> entityLock(mutexes[ENTITIES]);
 	for (auto& player : players) {
 		player->Update(deltaTime);
+	}
+	for (auto& food : foods) {
+		food->Update(deltaTime);
 	}
 }
 
@@ -127,7 +163,6 @@ void Server::ProcessClient(SOCKET client_sock)
 		}
 		type = ntohl(type);
 
-		// 서버가 클라에게 받아야 할 내용 PLAYER_INPUT 수신은 완 PLAYER_INPUT 재송신 필요
 		switch (type) {
 		case PACKET_TYPE::PLAYER_INPUT: 
 		{
@@ -159,6 +194,7 @@ void Server::ProcessClient(SOCKET client_sock)
 
 	cmd = make_unique<Command>(CMD_TYPE::LOGOUT);
 	cmd->context = make_shared<CMD_Logout>(client_sock);
+
 	excuteLock.lock();
 	excuteQueue.emplace(move(cmd));
 	cv.notify_all();
@@ -179,87 +215,95 @@ void Server::Excute()
 		case CMD_TYPE::LOGIN_SUCCESS:
 		{
 			auto context = static_pointer_cast<CMD_LoginSuccess>(cmd->context);
-			auto player = make_unique<Player>();
-			player->id = context->appendSock;
-			player->color = Random::RandInt(0, colors.size() - 1);
-			//sf::Vector2f pos(Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize), Random::RandInt(Player::startSize, PlayScene::worldHeight - Player::startSize));
-			sf::Vector2f pos(Random::RandInt(100, 150), Random::RandInt(100, 150));
 
-			player->SetPosition(pos);
+			//sf::Vector2f pos(Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize), Random::RandInt(Player::startSize, PlayScene::worldHeight - Player::startSize));
+			//테스트 타임을 줄이기 위해 비슷한 공간에서 소환 중/ 위 코드로 변경할 예정
+			auto player = make_unique<Player>(context->appendSock);
+			player->SetPosition(Random::RandInt(100, 150), Random::RandInt(100, 150));
+			player->color = Random::RandInt(0, colors.size() - 1);
 			// 나중에 로그인 시 받은 이름으로 변경할 예정
 			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
 			string name = "Player" + to_string(players.size());
 			memcpy(player->name, name.c_str(), name.length());
-			vector<LoginSuccess::PlayerInfo> datas;
-			datas.emplace_back(*player);
-			for (const auto& player : players) {
-				datas.emplace_back(*player);
+			vector<PlayerInfo> infos;
+			infos.emplace_back(*player);
+			cout << players.size() << endl;
+			for (const auto& p : players) {
+				infos.emplace_back(*p);
 			}
-			players.emplace_front(move(player));
-			entityLock.unlock();
-			auto packet = make_shared<LoginSuccess>();
-			packet->datas = datas;
-			uint type = (uint)PACKET_TYPE::LOGIN_SUCCESS;
-			type = htonl(type);
-			send(context->appendSock, (char*)&type, sizeof(uint), 0);
-			packet->Send(context->appendSock);
-
-
 			auto newCMD = make_unique<Command>(CMD_TYPE::PLAYER_APPEND);
-			auto newContext = make_shared<CMD_PlayerAppend>(context->appendSock);
+			auto newContext = make_shared<CMD_PlayerAppend>(context->appendSock, player->Position().x, player->Position().y, player->color, name.c_str());
+			memcpy(newContext->name, name.c_str(), 16);
 			newCMD->context = newContext;
 
 			queueLock.lock();
 			excuteQueue.emplace(move(newCMD));
 			queueLock.unlock();
+
+			players.emplace_front(move(player));
+			vector<FoodInfo> foodInfos;
+			foodInfos.reserve(foods.size());
+			for (const auto& f : foods) {
+				foodInfos.emplace_back(*f);
+			}
+			entityLock.unlock();
+			auto packet = make_shared<LoginSuccess>();
+			packet->players = infos;
+			packet->foods = foodInfos;
+			uint type = (uint)PACKET_TYPE::LOGIN_SUCCESS;
+			type = htonl(type);
+			lock_guard<mutex> sockLock(mutexes[CLIENT_SOCK]);
+			send(context->appendSock, (char*)&type, sizeof(uint), 0);
+			packet->Send(context->appendSock);
 		}
 		break;
 		case CMD_TYPE::PLAYER_APPEND:
 		{
 			auto context = static_pointer_cast<CMD_PlayerAppend>(cmd->context);
 			auto packet = make_shared<PlayerAppend>();
-			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
-			auto iter = find_if(players.begin(), players.end(), [&](const auto& player) {return player->id == context->appendSock; });
-			if (iter != players.end()) {
-				const auto& player = *iter;
-				packet->color = player->color;
-				packet->id = player->id;
-				packet->x = player->Position().x;
-				packet->y = player->Position().y;
-				memcpy(packet->name, player->name, 16);
-				entityLock.unlock();
-				uint type = htonl(PACKET_TYPE::PLAYER_APPEND);
-				for (auto sock : clients) {
-					if (sock != context->appendSock) {
-						send(sock, (char*)&type, sizeof(uint), 0);
-						packet->Send(sock);
-					}
+
+			packet->color = context->color;
+			packet->id = context->appendSock;
+			packet->x = context->x;
+			packet->y = context->y;
+			memcpy(packet->name, context->name, 16);
+			uint type = htonl(PACKET_TYPE::PLAYER_APPEND);
+			lock_guard<mutex> lock(mutexes[CLIENT_SOCK]);
+			for (auto sock : clients) {
+				if (sock != context->appendSock) {
+					send(sock, (char*)&type, sizeof(uint), 0);
+					packet->Send(sock);
 				}
-			}
-			else {
-				entityLock.unlock();
 			}
 		}
 		break;
 		case CMD_TYPE::PLAYER_INPUT:
 		{
 			auto context = static_pointer_cast<CMD_PlayerInput>(cmd->context);
-			unique_lock<mutex> lock(mutexes[ENTITIES]);
+			lock_guard<mutex> lock(mutexes[ENTITIES]);
 			auto iter = find_if(players.begin(), players.end(), [&](const auto& player) {return player->id == context->id; });
+
 			if (iter != players.end()) {
 				const auto& player = *iter;
 				player->SetDestination(player->Position().x + context->x, player->Position().y + context->y);
 				auto packet = make_shared<PlayerInput>(player->id, player->Destination().x, player->Destination().y);
 				uint type = htonl(PACKET_TYPE::PLAYER_INPUT);
+				lock_guard<mutex> sockLock(mutexes[CLIENT_SOCK]);
 				for (auto sock : clients) {
 					send(sock, (char*)&type, sizeof(uint), 0);
 					packet->Send(sock);
 				}
-				lock.unlock();
-
 			}
 			else {
-				lock.unlock();
+				cout << context->id << endl;
+				cout << "fail send input" << endl;
+				for (const auto& p : clients) {
+					cout << p << endl;
+				}
+				cout << "player" << endl;
+				for (const auto& p : players) {
+					cout << p->id << endl;
+				}
 			}
 		}
 		break;
@@ -282,6 +326,47 @@ void Server::Excute()
 			erase_if(players, [&](auto& player) {return player->id == (int)context->outSock; });
 		}
 		break;
+<<<<<<< Updated upstream
+=======
+		case CMD_TYPE::CHECK_COLLISION:
+		{
+			auto context = static_pointer_cast<CMD_CheckCollision>(cmd->context);
+
+			unique_lock<mutex> lock(mutexes[ENTITIES]);
+			auto iter1 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == context->id1; });
+			auto iter2 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == context->id2; });
+
+			if (iter1 != players.end() && iter2 != players.end()) {
+				auto& player1 = *iter1;
+				auto& player2 = *iter2;
+
+				
+				//// 충돌 처리 로직: 추후 상의후 변경
+				//if (player1->size > player2->size) {
+				//	player1->size += player2->size * 0.5f; // 패배자의 일부 크기를 승자가 흡수
+				//	players.erase(iter2);                 // 패배 플레이어 제거
+				//}
+				//else {
+				//	player2->size += player1->size * 0.5f;
+				//	players.erase(iter1);
+				//}
+
+				// 모든 클라이언트에 충돌 정보를 알림
+				auto packet = make_shared<ConfirmCollision>();
+				packet->id1 = context->id1;
+				packet->id2 = context->id2;
+				uint type = htonl(PACKET_TYPE::CHECK_COLLISION);
+
+				lock.unlock(); // 잠금 해제 후 클라이언트 통신 처리
+				//unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
+				//for (auto& sock : clients) {
+				//	send(sock, (char*)&type, sizeof(uint), 0);
+				//	packet->Send(sock);
+				//}
+			}
+		}
+		break;
+>>>>>>> Stashed changes
 		default:
 			break;
 		}

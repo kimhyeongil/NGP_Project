@@ -5,7 +5,7 @@
 
 class Entity : public sf::Drawable {
 public:
-	Entity();
+	Entity(int id = -10000) :id{ id } {}
 
 	bool Active() const { return active; }
 	void SetActive(bool newActive);
@@ -20,8 +20,6 @@ public:
 
 	virtual void draw(sf::RenderTarget&, sf::RenderStates) const;
 
-	unsigned int color = 0;
-
 	int id;
 
 protected:
@@ -34,8 +32,8 @@ class Player : public Entity {
 public:
 	static constexpr float startSize = 20.f;
 
-	Player();
-	Player(const LoginSuccess::PlayerInfo&);
+	Player(int id);
+	Player(const PlayerInfo&);
 	Player(const PlayerAppend&);
 
 	void Update(double deltaTime) override;
@@ -45,12 +43,14 @@ public:
 	const sf::Vector2f& Destination() const { return destination; }
 
 	void SetPosition(const sf::Vector2f&) override;
+	void SetPosition(float x, float y) override { SetPosition(sf::Vector2f{ x,y }); };
 
 	void draw(sf::RenderTarget&, sf::RenderStates) const override;
 
 	char name[16];
 	float speed = 200;
-	float size;
+	float size{ startSize };
+	unsigned int color = 0;
 private:
 	sf::Vector2f destination;
 
@@ -59,10 +59,14 @@ private:
 class Food : public Entity{
 	static constexpr float maxTime = 5;
 public:
+	static constexpr float defaultSize = 5;
+
+	Food();
+	Food(const FoodInfo&);
+
 	void OnActive() override;
 
 	void Update(double deltaTime) override;
 
-private:
 	float activeTime = 0;
 };

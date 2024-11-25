@@ -19,7 +19,20 @@ struct Command {
 };
 
 struct CMD_PlayerAppend {
+	CMD_PlayerAppend(SOCKET sock, float x, float y, int color, const char* name)
+		:appendSock{ sock }
+		, x{ x }
+		, y{ y }
+		, color{ color }
+	{
+		memcpy(this->name, name, 16);
+	}
+
 	SOCKET appendSock;
+	
+	float x, y;
+	int color;
+	char name[16];
 };
 
 struct CMD_LoginSuccess {

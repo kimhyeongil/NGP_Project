@@ -7,11 +7,22 @@
 using namespace std;
 using namespace sf;
 
-Entity::Entity()
-	: shape{ 20.f }
+PlayerInfo::PlayerInfo(const Player& player)
 {
-	shape.setFillColor(colors[color]);
-	shape.setOrigin(shape.getRadius(), shape.getRadius());
+	id = player.id;
+	color = player.color;
+	size = player.size;
+	x = player.Position().x;
+	y = player.Position().y;
+	memcpy(name, player.name, 16);
+}
+
+FoodInfo::FoodInfo(const Food& food)
+{
+	id = food.id;
+	activeTime = food.activeTime;
+	x = food.Position().x;
+	y = food.Position().y;
 }
 
 void Entity::SetActive(bool newActive)
@@ -35,38 +46,36 @@ void Entity::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 }
 
-Player::Player()
-	: Entity{}
-	, size{ startSize }
+Player::Player(int id)
+	: Entity{ id }
 {
+	shape.setFillColor(colors[color]);
 	shape.setRadius(size);
-	shape.setPosition(-1, -1);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 }
 
-Player::Player(const LoginSuccess::PlayerInfo& info)
+Player::Player(const PlayerInfo& info)
 {
 	memcpy(name, info.name, 16);
 	size = info.size;
 	color = info.color;
 	id = info.id;
-	shape.setPosition(info.x, info.y);
 	shape.setRadius(size);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 	shape.setFillColor(colors[color]);
+	shape.setPosition(info.x, info.y);
 	destination = Position();
 }
 
 Player::Player(const PlayerAppend& info)
-	: size{startSize}
 {
 	color = info.color;
 	id = info.id;
 	memcpy(name, info.name, 16);
-	shape.setPosition(info.x, info.y);
 	shape.setRadius(size);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 	shape.setFillColor(colors[color]);
+	shape.setPosition(info.x, info.y);
 	destination = Position();
 }
 
@@ -140,6 +149,23 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		// 텍스트를 그린다
 		target.draw(text, states);
 	}
+}
+
+Food::Food()
+{
+	shape.setRadius(defaultSize);
+	shape.setFillColor(Random::RandColor());
+	shape.setOrigin(shape.getRadius(), shape.getRadius());
+}
+
+Food::Food(const FoodInfo& info)
+{
+	id = info.id;
+	activeTime = info.activeTime;
+	SetPosition(info.x, info.y);
+	shape.setRadius(defaultSize);
+	shape.setFillColor(Random::RandColor());
+	shape.setOrigin(shape.getRadius(), shape.getRadius());
 }
 
 void Food::OnActive()

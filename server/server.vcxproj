@@ -31,7 +31,6 @@
   <ItemGroup>
     <ClCompile Include="..\Client\Entity.cpp" />
     <ClCompile Include="..\Client\Random.cpp" />
-    <ClCompile Include="..\Common.cpp" />
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server.cpp" />

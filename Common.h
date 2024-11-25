@@ -125,43 +125,127 @@ struct PlayerAppend : public PacketContext{
 	char name[16];
 };
 
-struct LoginSuccess : public PacketContext {
-	struct PlayerInfo {
-		PlayerInfo() = default;
-		PlayerInfo(const class Player&);
-		void ntoh()
-		{
-			id = ntohl(id);
-			color = ntohl(color);
-			uint tempX; memcpy(&tempX, &x, sizeof(float)); x = ntohf(tempX);
-			uint tempY; memcpy(&tempY, &y, sizeof(float)); y = ntohf(tempY);
-			uint tempSize; memcpy(&tempSize, &size, sizeof(float)); size = ntohf(tempSize);
-		}
-
-		void hton()
-		{
-			id = htonl(id);
-			color = htonl(color);
-			uint tempX = htonf(x); memcpy(&x, &tempX, sizeof(float));
-			uint tempY = htonf(y); memcpy(&y, &tempY, sizeof(float));
-			uint tempSize = htonf(size); memcpy(&size, &tempSize, sizeof(float));
-		}
-
-		int id;
-		char name[16];
-		float x, y;
-		int color;
-		float size;
+<<<<<<< Updated upstream
+=======
+struct ConfirmCollision : public PacketContext {
+	struct Data {
+		Data() = default;
+		Data(const ConfirmCollision& context) : id1{ context.id1 }, id2{ context.id2 } {}
+		int id1;
+		int id2;
 	};
+
+	ConfirmCollision& operator=(const Data& data)
+	{
+		id1 = data.id1;
+		id2 = data.id2;
+		return *this;
+	}
 
 	void Send(SOCKET sock) override
 	{
-		uint size = datas.size();
+		ConfirmCollision temp = *this;
+		temp.hton();
+		Data data = temp;
+		send(sock, (char*)&data, sizeof(Data), 0);
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		Data data;
+		recv(sock, (char*)&data, sizeof(Data), 0);
+		*this = data;
+		ntoh();
+	}
+
+	void ntoh() override
+	{
+		id1 = ntohl(id1);
+		id2 = ntohl(id2);
+	}
+
+	void hton() override
+	{
+		id1 = htonl(id1);
+		id2 = htonl(id2);
+		
+	}
+	int id1;
+	int id2;
+};
+
+struct FoodInfo {
+	FoodInfo() = default;
+	FoodInfo(const class Food&);
+
+	void ntoh()
+	{
+		id = ntohl(id);
+		uint tempX; memcpy(&tempX, &x, sizeof(float)); x = ntohf(tempX);
+		uint tempY; memcpy(&tempY, &y, sizeof(float)); y = ntohf(tempY);
+		uint tempTime; memcpy(&tempTime, &activeTime, sizeof(float)); activeTime = ntohf(tempTime);
+	}
+
+	void hton()
+	{
+		id = htonl(id);
+		uint tempX = htonf(x); memcpy(&x, &tempX, sizeof(float));
+		uint tempY = htonf(y); memcpy(&y, &tempY, sizeof(float));
+		uint tempTime = htonf(activeTime); memcpy(&activeTime, &tempTime, sizeof(float));
+	}
+
+	int id;
+	float x, y;
+	float activeTime;
+};
+
+struct PlayerInfo {
+	PlayerInfo() = default;
+	PlayerInfo(const class Player&);
+
+	void ntoh()
+	{
+		id = ntohl(id);
+		color = ntohl(color);
+		uint tempX; memcpy(&tempX, &x, sizeof(float)); x = ntohf(tempX);
+		uint tempY; memcpy(&tempY, &y, sizeof(float)); y = ntohf(tempY);
+		uint tempSize; memcpy(&tempSize, &size, sizeof(float)); size = ntohf(tempSize);
+	}
+
+	void hton()
+	{
+		id = htonl(id);
+		color = htonl(color);
+		uint tempX = htonf(x); memcpy(&x, &tempX, sizeof(float));
+		uint tempY = htonf(y); memcpy(&y, &tempY, sizeof(float));
+		uint tempSize = htonf(size); memcpy(&size, &tempSize, sizeof(float));
+	}
+
+	int id;
+	char name[16];
+	float x, y;
+	int color;
+	float size;
+};
+
+>>>>>>> Stashed changes
+struct LoginSuccess : public PacketContext {
+
+	void Send(SOCKET sock) override
+	{
+		hton();
+
+		uint size = players.size();
 		size = htonl(size);
 		send(sock, (char*)&size, sizeof(uint), 0);
 
-		hton();
-		send(sock, (char*)datas.data(), datas.size() * sizeof(PlayerInfo), 0);
+		send(sock, (char*)players.data(), players.size() * sizeof(PlayerInfo), 0);
+
+		size = foods.size();
+		size = htonl(size);
+		send(sock, (char*)&size, sizeof(uint), 0);
+
+		send(sock, (char*)foods.data(), foods.size() * sizeof(FoodInfo), 0);
 	}
 
 	void Recv(SOCKET sock) override
@@ -170,26 +254,42 @@ struct LoginSuccess : public PacketContext {
 		recv(sock, (char*)&size, sizeof(uint), 0);
 		size = ntohl(size);
 
-		datas.resize(size);
-		recv(sock, (char*)datas.data(), datas.size() * sizeof(PlayerInfo), 0);
+		players.resize(size);
+		recv(sock, (char*)players.data(), players.size() * sizeof(PlayerInfo), 0);
+
+		recv(sock, (char*)&size, sizeof(uint), 0);
+		size = ntohl(size);
+
+		foods.resize(size);
+		recv(sock, (char*)foods.data(), foods.size() * sizeof(FoodInfo), 0);
+
 		ntoh();
 	}
 
 	void ntoh() override
 	{
-		for (auto& data : datas) {
-			data.ntoh();
+		for (auto& player : players) {
+			player.ntoh();
+		}
+
+		for (auto& food : foods) {
+			food.ntoh();
 		}
 	}
 
 	void hton() override
 	{
-		for (auto& data : datas) {
-			data.hton();
+		for (auto& player : players) {
+			player.hton();
+		}
+
+		for (auto& food : foods) {
+			food.hton();
 		}
 	}
 
-	std::vector<PlayerInfo> datas;
+	std::vector<PlayerInfo> players;
+	std::vector<FoodInfo> foods;
 };
 
 struct Logout : public PacketContext {
