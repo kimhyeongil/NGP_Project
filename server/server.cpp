@@ -89,8 +89,6 @@ void Server::Run()
 
 void Server::CheckCollision()
 {
-<<<<<<< Updated upstream
-=======
 	lock_guard<mutex> entityLock(mutexes[ENTITIES]);
 
 	 //충돌한 플레이어 간 데이터를 저장
@@ -117,7 +115,6 @@ void Server::CheckCollision()
 			}
 		}
 	}
->>>>>>> Stashed changes
 }
 
 void Server::Update(double deltaTime)
@@ -326,8 +323,6 @@ void Server::Excute()
 			erase_if(players, [&](auto& player) {return player->id == (int)context->outSock; });
 		}
 		break;
-<<<<<<< Updated upstream
-=======
 		case CMD_TYPE::CHECK_COLLISION:
 		{
 			auto context = static_pointer_cast<CMD_CheckCollision>(cmd->context);
@@ -366,7 +361,6 @@ void Server::Excute()
 			}
 		}
 		break;
->>>>>>> Stashed changes
 		default:
 			break;
 		}

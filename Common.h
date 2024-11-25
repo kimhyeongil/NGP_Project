@@ -125,8 +125,6 @@ struct PlayerAppend : public PacketContext{
 	char name[16];
 };
 
-<<<<<<< Updated upstream
-=======
 struct ConfirmCollision : public PacketContext {
 	struct Data {
 		Data() = default;
@@ -228,7 +226,6 @@ struct PlayerInfo {
 	float size;
 };
 
->>>>>>> Stashed changes
 struct LoginSuccess : public PacketContext {
 
 	void Send(SOCKET sock) override
@@ -319,6 +316,7 @@ enum PACKET_TYPE : uint
 	,LOGIN_SUCCESS
 	,PLAYER_APPEND
 	,LOGOUT
+	, CHECK_COLLISION
 
 };
 
