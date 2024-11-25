@@ -285,7 +285,7 @@ void Server::Excute()
 			if (iter != players.end()) {
 				const auto& player = *iter;
 				player->SetDestination(player->Position().x + context->x, player->Position().y + context->y);
-				auto packet = make_shared<PlayerInput>(player->id, player->destination.x, player->destination.y);
+				auto packet = make_shared<PlayerInput>(player->id, player->Destination().x, player->Destination().y);
 				uint type = htonl(PACKET_TYPE::PLAYER_INPUT);
 				for (auto sock : clients) {
 					send(sock, (char*)&type, sizeof(uint), 0);

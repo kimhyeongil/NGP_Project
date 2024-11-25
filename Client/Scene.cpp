@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "Entity.h"
 #include "Game.h"
+#include "Random.h"
 #include <iostream>
 using namespace std;
 using namespace sf;
@@ -9,6 +10,10 @@ Scene::Scene()
 	:view(FloatRect(0, 0, Game::windowWidth, Game::windowHeight))
 {
 	view.setSize(Game::windowWidth, Game::windowHeight);
+	for (int i = 0; i < 50; ++i) {
+		entities.emplace_back(make_unique<Food>());
+		entities.back()->SetPosition(Random::RandInt(200, 150), Random::RandInt(200, 150));
+	}
 }
 
 PlayScene::PlayScene()
@@ -58,6 +63,10 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		entities.clear();
 		for (int i = 1; i < context->datas.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->datas[i]));
+		}
+		for (int i = 0; i < 5000; ++i) {
+			entities.emplace_back(make_unique<Food>());
+			entities.back()->SetPosition(Random::RandInt(100, worldWidth - 100), Random::RandInt(100, worldHeight - 100));
 		}
 	}
 	break;
