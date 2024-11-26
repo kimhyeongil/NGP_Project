@@ -128,8 +128,10 @@ void Player::OnCollision(const Entity* collider) {
 		}
 	}
 	else if (auto other = dynamic_cast<const Food*>(collider); other != nullptr) {
-		size += Food::defaultSize / 2;
+		size += Food::defaultSize;
 	}
+	shape.setRadius(size / 10.f);
+	shape.setOrigin(shape.getRadius(), shape.getRadius());
 }
 
 void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -183,8 +185,15 @@ Food::Food(const FoodInfo& info)
 
 void Food::OnActive()
 {
-	shape.setFillColor(Random::RandColor());
-	activeTime = 0;
+	//shape.setFillColor(Random::RandColor());
+	//activeTime = 0;
+}
+
+void Food::OnCollision(const Entity* collider)
+{
+	if (auto other = dynamic_cast<const Player*>(collider); other != nullptr) {
+		SetActive(false);
+	}
 }
 
 void Food::Update(double deltaTime)

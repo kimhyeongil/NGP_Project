@@ -109,7 +109,6 @@ void ClientNetworkManager::Recv()
 		case PACKET_TYPE::CHECK_COLLISION:
 		{
 			packet.context = make_shared<ConfirmCollision>();
-			cout << "recv collision" << endl;
 		}
 		break;
 		default:

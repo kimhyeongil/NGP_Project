@@ -96,6 +96,29 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		erase_if(entities, [&](auto& entity) {return entity->id == context->id; });
 	}
 	break;
+	case PACKET_TYPE::CHECK_COLLISION:
+	{
+		auto context = static_pointer_cast<ConfirmCollision>(packet.context);
+
+		cout << context->id1 << endl;
+		cout << context->id2 << endl;
+		cout << player->id << endl;
+		auto iter1 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id = context->id1; });
+		auto iter2 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id = context->id2; });
+		if (context->id1 == player->id) {
+			player->OnCollision((*iter2).get());
+			(*iter2)->OnCollision(player.get());
+		}
+		else if (context->id2 == player->id) {
+			player->OnCollision((*iter1).get());
+			(*iter1)->OnCollision(player.get());
+		}
+		else {
+			(*iter1)->OnCollision((*iter2).get());
+			(*iter2)->OnCollision((*iter1).get());
+		}
+	}
+	break;
 	default:
 		break;
 	}

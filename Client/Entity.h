@@ -16,6 +16,8 @@ public:
 	virtual void OnCollision(const Entity* collider) {}
 
 	sf::Vector2f Position() const { return shape.getPosition(); }
+	float Radius() const { return shape.getRadius(); }
+
 	virtual void SetPosition(const sf::Vector2f& pos) { shape.setPosition(pos); }
 	virtual void SetPosition(float x, float y) { shape.setPosition(sf::Vector2f{ x, y }); }
 
@@ -69,6 +71,7 @@ public:
 	void OnActive() override;
 
 	void Update(double deltaTime) override;
+	void OnCollision(const Entity* collider) override;
 
 	float activeTime = 0;
 };

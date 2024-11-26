@@ -42,6 +42,8 @@ Server::Server()
 	foods.resize(1000);
 	for (auto& food : foods) {
 		food = make_unique<Food>();
+		static int id = -1;
+		food->id = id--;
 		food->SetPosition(Random::RandInt(Food::defaultSize, PlayScene::worldWidth - Food::defaultSize), Random::RandInt(Food::defaultSize, PlayScene::worldHeight - Food::defaultSize));
 	}
 	thread(&Server::Excute, this).detach();
@@ -95,18 +97,25 @@ void Server::Run()
 void Server::CheckCollision()
 {
 	lock_guard<mutex> entityLock(mutexes[ENTITIES]);
-
 	 //충돌한 플레이어 간 데이터를 저장
 	for (auto it1 = players.begin(); it1 != players.end(); ++it1) {
+		auto& player1 = *it1;
+		if (!player1->Active()) {
+			continue;
+		}
 		for (auto it2 = next(it1); it2 != players.end(); ++it2) {
-			auto& player1 = *it1;
 			auto& player2 = *it2;
-
+			if (player2->Active()) {
+				continue;
+			}
 			float distance = sf::Vector2f::Distance(player1->Position(), player2->Position());
 
-			float combinedRadius = player1->size + player2->size;
+			float combinedRadius = player1->Radius() + player2->Radius();
 			
 			if (distance < combinedRadius) {
+				player1->OnCollision(player2.get());
+				player2->OnCollision(player1.get());
+
 				//printf("%f, %f\n", distance, combinedRadius);
 				// 충돌 발생, CMD_CheckCollision 생성
 				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
@@ -116,10 +125,34 @@ void Server::CheckCollision()
 				// Excute()로 전달
 				lock_guard<mutex> executeLock(mutexes[EXCUTE]);
 				excuteQueue.emplace(move(cmd));
-				cv.notify_all();
 			}
 		}
 	}
+	for (const auto& player : players) {
+		if (!player->Active()) {
+			continue;
+		}
+		for (const auto& food : foods) {
+			if (!food->Active()) {
+				continue;
+			}
+			float distance = sf::Vector2f::Distance(player->Position(), food->Position());
+			float combinedRadius = player->Radius() + food->Radius();
+			if (distance < combinedRadius) {
+				player->OnCollision(food.get());
+				food->OnCollision(player.get());
+
+				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
+				auto context = make_shared<CMD_CheckCollision>(player->id, food->id);
+				cmd->context = context;
+
+				// Excute()로 전달
+				lock_guard<mutex> executeLock(mutexes[EXCUTE]);
+				excuteQueue.emplace(move(cmd));
+			}
+		}
+	}
+	cv.notify_all();
 }
 
 void Server::Update(double deltaTime)
@@ -199,7 +232,7 @@ void Server::Excute()
 		auto cmd = move(excuteQueue.front());
 		excuteQueue.pop();
 		queueLock.unlock();
-		
+
 		switch (cmd->type)
 		{
 		case CMD_TYPE::LOGIN_SUCCESS:
@@ -309,37 +342,14 @@ void Server::Excute()
 		{
 			auto context = static_pointer_cast<CMD_CheckCollision>(cmd->context);
 
-			unique_lock<mutex> lock(mutexes[ENTITIES]);
-			auto iter1 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == context->id1; });
-			auto iter2 = find_if(players.begin(), players.end(), [&](const auto& player) { return player->id == context->id2; });
-
-			if (iter1 != players.end() && iter2 != players.end()) {
-				auto& player1 = *iter1;
-				auto& player2 = *iter2;
-
-				
-				//// 충돌 처리 로직: 추후 상의후 변경
-				//if (player1->size > player2->size) {
-				//	player1->size += player2->size * 0.5f; // 패배자의 일부 크기를 승자가 흡수
-				//	players.erase(iter2);                 // 패배 플레이어 제거
-				//}
-				//else {
-				//	player2->size += player1->size * 0.5f;
-				//	players.erase(iter1);
-				//}
-
-				// 모든 클라이언트에 충돌 정보를 알림
-				auto packet = make_shared<ConfirmCollision>();
-				packet->id1 = context->id1;
-				packet->id2 = context->id2;
-				uint type = htonl(PACKET_TYPE::CHECK_COLLISION);
-
-				lock.unlock(); // 잠금 해제 후 클라이언트 통신 처리
-				//unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
-				//for (auto& sock : clients) {
-				//	send(sock, (char*)&type, sizeof(uint), 0);
-				//	packet->Send(sock);
-				//}
+			// 모든 클라이언트에 충돌 정보를 알림
+			auto packet = make_shared<ConfirmCollision>();
+			packet->id1 = context->id1;
+			packet->id2 = context->id2;
+			uint type = htonl(PACKET_TYPE::CHECK_COLLISION);
+			for (auto& sock : clients) {
+				send(sock, (char*)&type, sizeof(uint), 0);
+				packet->Send(sock);
 			}
 		}
 		break;
