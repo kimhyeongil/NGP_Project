@@ -205,25 +205,25 @@ struct PlayerInfo {
 	{
 		id = ntohl(id);
 		color = ntohl(color);
+		size = ntohl(size);
 		uint tempX; memcpy(&tempX, &x, sizeof(float)); x = ntohf(tempX);
 		uint tempY; memcpy(&tempY, &y, sizeof(float)); y = ntohf(tempY);
-		uint tempSize; memcpy(&tempSize, &size, sizeof(float)); size = ntohf(tempSize);
 	}
 
 	void hton()
 	{
 		id = htonl(id);
 		color = htonl(color);
+		size = htonl(size);
 		uint tempX = htonf(x); memcpy(&x, &tempX, sizeof(float));
 		uint tempY = htonf(y); memcpy(&y, &tempY, sizeof(float));
-		uint tempSize = htonf(size); memcpy(&size, &tempSize, sizeof(float));
 	}
 
 	int id;
 	char name[16];
 	float x, y;
 	int color;
-	float size;
+	int size;
 };
 
 struct LoginSuccess : public PacketContext {

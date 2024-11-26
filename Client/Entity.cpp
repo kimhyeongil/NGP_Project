@@ -50,7 +50,7 @@ Player::Player(int id)
 	: Entity{ id }
 {
 	shape.setFillColor(colors[color]);
-	shape.setRadius(size);
+	shape.setRadius(size / 10.f);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 }
 
@@ -60,7 +60,7 @@ Player::Player(const PlayerInfo& info)
 	size = info.size;
 	color = info.color;
 	id = info.id;
-	shape.setRadius(size);
+	shape.setRadius(size / 10.f);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 	shape.setFillColor(colors[color]);
 	shape.setPosition(info.x, info.y);
@@ -72,7 +72,7 @@ Player::Player(const PlayerAppend& info)
 	color = info.color;
 	id = info.id;
 	memcpy(name, info.name, 16);
-	shape.setRadius(size);
+	shape.setRadius(size / 10.f);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 	shape.setFillColor(colors[color]);
 	shape.setPosition(info.x, info.y);
@@ -81,9 +81,8 @@ Player::Player(const PlayerAppend& info)
 
 void Player::SetDestination(const sf::Vector2f& dest)
 {
-	
-	destination = Vector2f::Min(dest, Vector2f{ PlayScene::worldWidth - size, PlayScene::worldHeight - size });
-	destination = Vector2f::Max(destination, Vector2f{ size, size });
+	destination = Vector2f::Min(dest, Vector2f{ PlayScene::worldWidth - shape.getRadius(), PlayScene::worldHeight - shape.getRadius() });
+	destination = Vector2f::Max(destination, Vector2f{ shape.getRadius(), shape.getRadius() });
 }
 
 void  Player::SetDestination(float x, float y)
@@ -94,8 +93,8 @@ void  Player::SetDestination(float x, float y)
 void Player::SetPosition(const sf::Vector2f& pos)
 {
 	auto position = pos;
-	position = Vector2f::Min(position, Vector2f{ PlayScene::worldWidth - size, PlayScene::worldHeight - size });
-	position = Vector2f::Max(position, Vector2f{ size, size });
+	position = Vector2f::Min(position, Vector2f{ PlayScene::worldWidth - shape.getRadius(), PlayScene::worldHeight - shape.getRadius() });
+	position = Vector2f::Max(position, Vector2f{ shape.getRadius(), shape.getRadius() });
 	shape.setPosition(position);
 	destination = position;
 
@@ -111,11 +110,25 @@ void Player::Update(double deltaTime)
 			shape.move(dir * distance);
 
 			position = Position();
-			position = Vector2f::Min(position, Vector2f{ PlayScene::worldWidth - size, PlayScene::worldHeight - size });
-			position = Vector2f::Max(position, Vector2f{ size, size });
+			position = Vector2f::Min(position, Vector2f{ PlayScene::worldWidth - shape.getRadius(), PlayScene::worldHeight - shape.getRadius() });
+			position = Vector2f::Max(position, Vector2f{ shape.getRadius(), shape.getRadius() });
 
 			shape.setPosition(position);
 		}
+	}
+}
+
+void Player::OnCollision(const Entity* collider) {
+	if (auto other = dynamic_cast<const Player*>(collider); other != nullptr) {
+		if (other->size > size) {
+			SetActive(false);
+		}
+		else if (other->size < size) {
+			size += other->size / 2;
+		}
+	}
+	else if (auto other = dynamic_cast<const Food*>(collider); other != nullptr) {
+		size += Food::defaultSize / 2;
 	}
 }
 
@@ -135,7 +148,7 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		sf::Text text;
 		text.setFont(font);
 		text.setString(name);
-		text.setCharacterSize(size / 2);
+		text.setCharacterSize(shape.getRadius() / 2);
 		text.setFillColor(sf::Color::Black);
 
 		// 텍스트의 중심을 설정

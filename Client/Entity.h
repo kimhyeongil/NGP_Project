@@ -13,6 +13,7 @@ public:
 	virtual void OnInactive() {}
 
 	virtual void Update(double deltaTime) {}
+	virtual void OnCollision(const Entity* collider) {}
 
 	sf::Vector2f Position() const { return shape.getPosition(); }
 	virtual void SetPosition(const sf::Vector2f& pos) { shape.setPosition(pos); }
@@ -30,13 +31,14 @@ private:
 
 class Player : public Entity {
 public:
-	static constexpr float startSize = 20.f;
+	static constexpr int startSize = 200;
 
 	Player(int id);
 	Player(const PlayerInfo&);
 	Player(const PlayerAppend&);
 
 	void Update(double deltaTime) override;
+	void OnCollision(const Entity* collider) override;
 
 	void SetDestination(const sf::Vector2f&);
 	void SetDestination(float x, float y);
@@ -49,7 +51,7 @@ public:
 
 	char name[16];
 	float speed = 200;
-	float size{ startSize };
+	int size{ startSize };
 	unsigned int color = 0;
 private:
 	sf::Vector2f destination;
