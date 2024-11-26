@@ -41,9 +41,8 @@ Server::Server()
 	}
 	foods.resize(1000);
 	for (auto& food : foods) {
-		food = make_unique<Food>();
 		static int id = -1;
-		food->id = id--;
+		food = make_unique<Food>(id--);
 		food->SetPosition(Random::RandInt(Food::defaultSize, PlayScene::worldWidth - Food::defaultSize), Random::RandInt(Food::defaultSize, PlayScene::worldHeight - Food::defaultSize));
 	}
 	thread(&Server::Excute, this).detach();
@@ -100,12 +99,12 @@ void Server::CheckCollision()
 	 //충돌한 플레이어 간 데이터를 저장
 	for (auto it1 = players.begin(); it1 != players.end(); ++it1) {
 		auto& player1 = *it1;
-		if (!player1->Active()) {
+		if (!player1->active) {
 			continue;
 		}
 		for (auto it2 = next(it1); it2 != players.end(); ++it2) {
 			auto& player2 = *it2;
-			if (player2->Active()) {
+			if (!player2->active) {
 				continue;
 			}
 			float distance = sf::Vector2f::Distance(player1->Position(), player2->Position());
@@ -115,7 +114,7 @@ void Server::CheckCollision()
 			if (distance < combinedRadius) {
 				player1->OnCollision(player2.get());
 				player2->OnCollision(player1.get());
-
+				cout << "충돌" << endl;
 				//printf("%f, %f\n", distance, combinedRadius);
 				// 충돌 발생, CMD_CheckCollision 생성
 				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
@@ -129,11 +128,11 @@ void Server::CheckCollision()
 		}
 	}
 	for (const auto& player : players) {
-		if (!player->Active()) {
+		if (!player->active) {
 			continue;
 		}
 		for (const auto& food : foods) {
-			if (!food->Active()) {
+			if (!food->active) {
 				continue;
 			}
 			float distance = sf::Vector2f::Distance(player->Position(), food->Position());
@@ -141,7 +140,7 @@ void Server::CheckCollision()
 			if (distance < combinedRadius) {
 				player->OnCollision(food.get());
 				food->OnCollision(player.get());
-
+				cout << boolalpha <<food->active << boolalpha << endl;
 				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
 				auto context = make_shared<CMD_CheckCollision>(player->id, food->id);
 				cmd->context = context;
@@ -346,6 +345,7 @@ void Server::Excute()
 			auto packet = make_shared<ConfirmCollision>();
 			packet->id1 = context->id1;
 			packet->id2 = context->id2;
+
 			uint type = htonl(PACKET_TYPE::CHECK_COLLISION);
 			for (auto& sock : clients) {
 				send(sock, (char*)&type, sizeof(uint), 0);

@@ -5,12 +5,7 @@
 
 class Entity : public sf::Drawable {
 public:
-	Entity(int id = -10000) :id{ id } {}
-
-	bool Active() const { return active; }
-	void SetActive(bool newActive);
-	virtual void OnActive() {}
-	virtual void OnInactive() {}
+	Entity(int id) :id{ id } {}
 
 	virtual void Update(double deltaTime) {}
 	virtual void OnCollision(const Entity* collider) {}
@@ -24,11 +19,9 @@ public:
 	virtual void draw(sf::RenderTarget&, sf::RenderStates) const;
 
 	int id;
-
+	bool active = true;
 protected:
 	sf::CircleShape shape;
-private:
-	bool active = true;
 };
 
 class Player : public Entity {
@@ -65,10 +58,8 @@ class Food : public Entity{
 public:
 	static constexpr float defaultSize = 5;
 
-	Food();
+	Food(int id);
 	Food(const FoodInfo&);
-
-	void OnActive() override;
 
 	void Update(double deltaTime) override;
 	void OnCollision(const Entity* collider) override;

@@ -58,9 +58,6 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		for (const auto& info : context->foods) {
 			entities.emplace_back(make_unique<Food>(info));
 		}
-		for (const auto& food : entities) {
-			cout << food->id << endl;
-		}
 		for (int i = 1; i < context->players.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->players[i]));
 		}

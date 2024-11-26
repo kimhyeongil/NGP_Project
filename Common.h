@@ -166,12 +166,12 @@ struct ConfirmCollision : public PacketContext {
 	{
 		id1 = htonl(id1);
 		id2 = htonl(id2);
-		
 	}
 	int id1;
 	int id2;
 };
 
+#pragma pack(push, 1)
 struct FoodInfo {
 	FoodInfo() = default;
 	FoodInfo(const class Food&);
@@ -195,7 +195,9 @@ struct FoodInfo {
 	int id;
 	float x, y;
 	float activeTime;
+	bool active;
 };
+#pragma pack(pop)
 
 struct PlayerInfo {
 	PlayerInfo() = default;

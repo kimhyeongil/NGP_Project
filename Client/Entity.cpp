@@ -20,28 +20,15 @@ PlayerInfo::PlayerInfo(const Player& player)
 FoodInfo::FoodInfo(const Food& food)
 {
 	id = food.id;
+	active = food.active;
 	activeTime = food.activeTime;
 	x = food.Position().x;
 	y = food.Position().y;
 }
 
-void Entity::SetActive(bool newActive)
-{
-	if (newActive == active) {
-		return;
-	}
-	active = newActive;
-	if (active) {
-		OnActive();
-	}
-	else {
-		OnInactive();
-	}
-}
-
 void Entity::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	if (Active()) {
+	if (active) {
 		target.draw(shape, states);
 	}
 }
@@ -55,11 +42,11 @@ Player::Player(int id)
 }
 
 Player::Player(const PlayerInfo& info)
+	:Entity{ info.id }
 {
 	memcpy(name, info.name, 16);
 	size = info.size;
 	color = info.color;
-	id = info.id;
 	shape.setRadius(size / 10.f);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 	shape.setFillColor(colors[color]);
@@ -68,9 +55,9 @@ Player::Player(const PlayerInfo& info)
 }
 
 Player::Player(const PlayerAppend& info)
+	:Entity{ info.id }
 {
 	color = info.color;
-	id = info.id;
 	memcpy(name, info.name, 16);
 	shape.setRadius(size / 10.f);
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
@@ -102,7 +89,7 @@ void Player::SetPosition(const sf::Vector2f& pos)
 
 void Player::Update(double deltaTime)
 {
-	if (Active()) {
+	if (active) {
 		auto position = shape.getPosition();
 		if (Vector2f::Distance(position, destination) > 1e-5) {
 			auto dir = Vector2f::Normalize(destination - position);
@@ -121,7 +108,7 @@ void Player::Update(double deltaTime)
 void Player::OnCollision(const Entity* collider) {
 	if (auto other = dynamic_cast<const Player*>(collider); other != nullptr) {
 		if (other->size > size) {
-			SetActive(false);
+			active = false;
 		}
 		else if (other->size < size) {
 			size += other->size / 2;
@@ -136,7 +123,7 @@ void Player::OnCollision(const Entity* collider) {
 
 void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	if (Active()) {
+	if (active) {
 		target.draw(shape, states);
 
 		// 텍스트를 그릴 준비
@@ -166,7 +153,8 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 }
 
-Food::Food()
+Food::Food(int id)
+	:Entity{ id }
 {
 	shape.setRadius(defaultSize);
 	shape.setFillColor(Random::RandColor());
@@ -174,37 +162,32 @@ Food::Food()
 }
 
 Food::Food(const FoodInfo& info)
+	:Entity{ info.id }
 {
-	id = info.id;
 	activeTime = info.activeTime;
+	active = info.active;
 	SetPosition(info.x, info.y);
 	shape.setRadius(defaultSize);
 	shape.setFillColor(Random::RandColor());
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
 }
 
-void Food::OnActive()
-{
-	//shape.setFillColor(Random::RandColor());
-	//activeTime = 0;
-}
-
 void Food::OnCollision(const Entity* collider)
 {
 	if (auto other = dynamic_cast<const Player*>(collider); other != nullptr) {
-		SetActive(false);
+		active = false;
 	}
 }
 
 void Food::Update(double deltaTime)
 {
-	if (Active()) {
+	if (active) {
 		activeTime += deltaTime;
 		auto color = shape.getFillColor();
 		color.a = 255 * (maxTime - activeTime) / maxTime;
 		shape.setFillColor(color);
 		if (activeTime > maxTime) {
-			//SetActive(false);
+			//active = false;
 		}
 	}
 }
