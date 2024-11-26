@@ -10,10 +10,6 @@ Scene::Scene()
 	:view(FloatRect(0, 0, Game::windowWidth, Game::windowHeight))
 {
 	view.setSize(Game::windowWidth, Game::windowHeight);
-	for (int i = 0; i < 50; ++i) {
-		entities.emplace_back(make_unique<Food>());
-		entities.back()->SetPosition(Random::RandInt(200, 150), Random::RandInt(200, 150));
-	}
 }
 
 PlayScene::PlayScene()
@@ -24,14 +20,14 @@ PlayScene::PlayScene()
 		sf::RectangleShape line(sf::Vector2f(lineThickness, worldHeight));
 		line.setPosition(x - lineThickness / 2.0f, 0);
 		line.setFillColor(lineColor);
-		world.push_back(line);
+		world.emplace_back(line);
 	}
 
 	for (int y = 0; y < worldHeight; y += space) {
 		sf::RectangleShape line(Vector2f(worldWidth, lineThickness));
 		line.setPosition(0, y - lineThickness / 2.0f);
 		line.setFillColor(lineColor);
-		world.push_back(line);
+		world.emplace_back(line);
 	}
 }
 
@@ -61,6 +57,9 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		entities.clear();
 		for (const auto& info : context->foods) {
 			entities.emplace_back(make_unique<Food>(info));
+		}
+		for (const auto& food : entities) {
+			cout << food->id << endl;
 		}
 		for (int i = 1; i < context->players.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->players[i]));
@@ -100,20 +99,18 @@ void PlayScene::HandlePacket(const PACKET& packet)
 	{
 		auto context = static_pointer_cast<ConfirmCollision>(packet.context);
 
-		cout << context->id1 << endl;
-		cout << context->id2 << endl;
-		cout << player->id << endl;
-		auto iter1 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id = context->id1; });
-		auto iter2 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id = context->id2; });
-		if (context->id1 == player->id) {
+		auto iter1 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == context->id1; });
+		auto iter2 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == context->id2; });
+
+		if (iter1 == entities.end() && context->id1 == player->id) {
 			player->OnCollision((*iter2).get());
 			(*iter2)->OnCollision(player.get());
 		}
-		else if (context->id2 == player->id) {
+		else if (iter2 == entities.end() && context->id2 == player->id) {
 			player->OnCollision((*iter1).get());
 			(*iter1)->OnCollision(player.get());
 		}
-		else {
+		else if(iter1 != entities.end() && iter2 != entities.end()){
 			(*iter1)->OnCollision((*iter2).get());
 			(*iter2)->OnCollision((*iter1).get());
 		}
