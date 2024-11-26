@@ -15,7 +15,6 @@ private:
 	enum MUTEX_CATEGORY : size_t {
 		  EXCUTE
 		, IO
-		, CLIENT_SOCK
 		, ENTITIES
 		, SIZE
 	};

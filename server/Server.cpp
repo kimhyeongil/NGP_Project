@@ -65,7 +65,11 @@ void Server::AcceptClient()
 		if (client_sock == INVALID_SOCKET) {
 			break;
 		}
-		thread(&Server::ProcessClient, this, client_sock).detach();
+		auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
+		cmd->context = make_shared<CMD_LoginSuccess>(client_sock);
+		lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
+		excuteQueue.emplace(move(cmd));
+		cv.notify_all();
 	}
 }
 
@@ -77,7 +81,8 @@ void Server::Run()
 	{
 		auto end = chrono::high_resolution_clock::now();
 		double deltaTime = chrono::duration_cast<chrono::nanoseconds>(end - start).count() * 1e-9;
-		while (deltaTime < 1e-4) {
+		if (deltaTime < 1e-4) {
+			this_thread::sleep_for(100ns);
 			end = chrono::high_resolution_clock::now();
 			deltaTime = chrono::duration_cast<chrono::nanoseconds>(end - start).count() * 1e-9;
 		}
@@ -142,17 +147,6 @@ void Server::ProcessClient(SOCKET client_sock)
 	print("[TCP 서버] 클라이언트 접속 : IP 주소 = {}, 포트 번호 = {}\n", addr, ntohs(clientaddr.sin_port));
 	ioLock.unlock();
 
-	unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
-	clients.emplace_back(client_sock);
-	clientLock.unlock();
-
-	auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
-	cmd->context = make_shared<CMD_LoginSuccess>(client_sock);
-	unique_lock<mutex> excuteLock(mutexes[EXCUTE]);
-	excuteQueue.emplace(move(cmd));
-	cv.notify_all();
-	excuteLock.unlock();
-
 	uint type;
 	while (true) {
 		if (recv(client_sock, (char*)&type, sizeof(uint), MSG_WAITALL) == SOCKET_ERROR) {
@@ -174,10 +168,10 @@ void Server::ProcessClient(SOCKET client_sock)
 			context->x = input->x;
 			context->y = input->y;
 			cmd->context = context;
-			excuteLock.lock();
+
+			lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
 			excuteQueue.emplace(move(cmd));
 			cv.notify_all();
-			excuteLock.unlock();
 		}
 		break;
 		default:
@@ -189,13 +183,12 @@ void Server::ProcessClient(SOCKET client_sock)
 	print("[TCP 서버] 클라이언트 종료 : IP 주소 = {}, 포트 번호 = {}\n", addr, ntohs(clientaddr.sin_port));
 	ioLock.unlock();
 
-	cmd = make_unique<Command>(CMD_TYPE::LOGOUT);
+	auto cmd = make_unique<Command>(CMD_TYPE::LOGOUT);
 	cmd->context = make_shared<CMD_Logout>(client_sock);
 
-	excuteLock.lock();
+	lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
 	excuteQueue.emplace(move(cmd));
 	cv.notify_all();
-	excuteLock.unlock();
 }
 
 void Server::Excute()
@@ -212,6 +205,8 @@ void Server::Excute()
 		case CMD_TYPE::LOGIN_SUCCESS:
 		{
 			auto context = static_pointer_cast<CMD_LoginSuccess>(cmd->context);
+			clients.emplace_back(context->appendSock);
+			thread(&Server::ProcessClient, this, context->appendSock).detach();
 
 			//sf::Vector2f pos(Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize), Random::RandInt(Player::startSize, PlayScene::worldHeight - Player::startSize));
 			//테스트 타임을 줄이기 위해 비슷한 공간에서 소환 중/ 위 코드로 변경할 예정
@@ -224,7 +219,6 @@ void Server::Excute()
 			memcpy(player->name, name.c_str(), name.length());
 			vector<PlayerInfo> infos;
 			infos.emplace_back(*player);
-			cout << players.size() << endl;
 			for (const auto& p : players) {
 				infos.emplace_back(*p);
 			}
@@ -247,9 +241,9 @@ void Server::Excute()
 			auto packet = make_shared<LoginSuccess>();
 			packet->players = infos;
 			packet->foods = foodInfos;
+
 			uint type = (uint)PACKET_TYPE::LOGIN_SUCCESS;
 			type = htonl(type);
-			lock_guard<mutex> sockLock(mutexes[CLIENT_SOCK]);
 			send(context->appendSock, (char*)&type, sizeof(uint), 0);
 			packet->Send(context->appendSock);
 		}
@@ -264,8 +258,8 @@ void Server::Excute()
 			packet->x = context->x;
 			packet->y = context->y;
 			memcpy(packet->name, context->name, 16);
+
 			uint type = htonl(PACKET_TYPE::PLAYER_APPEND);
-			lock_guard<mutex> lock(mutexes[CLIENT_SOCK]);
 			for (auto sock : clients) {
 				if (sock != context->appendSock) {
 					send(sock, (char*)&type, sizeof(uint), 0);
@@ -283,23 +277,12 @@ void Server::Excute()
 			if (iter != players.end()) {
 				const auto& player = *iter;
 				player->SetDestination(player->Position().x + context->x, player->Position().y + context->y);
+
 				auto packet = make_shared<PlayerInput>(player->id, player->Destination().x, player->Destination().y);
 				uint type = htonl(PACKET_TYPE::PLAYER_INPUT);
-				lock_guard<mutex> sockLock(mutexes[CLIENT_SOCK]);
 				for (auto sock : clients) {
 					send(sock, (char*)&type, sizeof(uint), 0);
 					packet->Send(sock);
-				}
-			}
-			else {
-				cout << context->id << endl;
-				cout << "fail send input" << endl;
-				for (const auto& p : clients) {
-					cout << p << endl;
-				}
-				cout << "player" << endl;
-				for (const auto& p : players) {
-					cout << p->id << endl;
 				}
 			}
 		}
@@ -309,18 +292,17 @@ void Server::Excute()
 			auto context = static_pointer_cast<CMD_Logout>(cmd->context);
 			auto payload = make_shared<Logout>();
 			payload->id = context->outSock;
+
 			uint type = htonl(PACKET_TYPE::LOGOUT);
-			unique_lock<mutex> clientLock(mutexes[CLIENT_SOCK]);
 			erase(clients, context->outSock);
 			for (auto& sock : clients) {
 				send(sock, (char*)&type, sizeof(uint), 0);
 				payload->Send(sock);
 			}
-			closesocket(context->outSock);
-			clientLock.unlock();
-
 			lock_guard<mutex> entityLock(mutexes[ENTITIES]);
 			erase_if(players, [&](auto& player) {return player->id == (int)context->outSock; });
+
+			closesocket(context->outSock);
 		}
 		break;
 		case CMD_TYPE::CHECK_COLLISION:
