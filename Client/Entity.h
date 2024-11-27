@@ -61,6 +61,7 @@ public:
 	Food(int id);
 	Food(const FoodInfo&);
 
+	void Reset();
 	void Update(double deltaTime) override;
 	void OnCollision(const Entity* collider) override;
 

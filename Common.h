@@ -311,6 +311,47 @@ struct Logout : public PacketContext {
 	int id;
 };
 
+struct RecreateFood : public PacketContext {
+	void Send(SOCKET sock) override
+	{
+		hton();
+
+		uint size = foods.size();
+		size = htonl(size);
+		send(sock, (char*)&size, sizeof(uint), 0);
+
+		send(sock, (char*)foods.data(), foods.size() * sizeof(FoodInfo), 0);
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		uint size;
+		recv(sock, (char*)&size, sizeof(uint), 0);
+		size = ntohl(size);
+
+		foods.resize(size);
+		recv(sock, (char*)foods.data(), foods.size() * sizeof(FoodInfo), 0);
+
+		ntoh();
+	}
+
+	void ntoh() override
+	{
+		for (auto& food : foods) {
+			food.ntoh();
+		}
+	}
+
+	void hton() override
+	{
+		for (auto& food : foods) {
+			food.hton();
+		}
+	}
+
+	std::vector<FoodInfo> foods;
+};
+
 enum PACKET_TYPE : uint
 {
 
@@ -318,8 +359,8 @@ enum PACKET_TYPE : uint
 	,LOGIN_SUCCESS
 	,PLAYER_APPEND
 	,LOGOUT
-	, CHECK_COLLISION
-
+	,CHECK_COLLISION
+	,RECREATE_FOOD
 };
 
 struct PACKET {

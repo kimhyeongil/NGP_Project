@@ -18,6 +18,8 @@ private:
 		, ENTITIES
 		, SIZE
 	};
+	static constexpr float recreateTime = 5;
+	static constexpr int maxReCnt = 20;
 public:
 	Server();
 	~Server();
@@ -41,10 +43,9 @@ private:
 	std::queue<std::unique_ptr<Command>> excuteQueue;
 	std::list<SOCKET> clients;
 
-	// 나중에 먹이 추가 시 그에 맞게 변경할 예정
 	std::list<std::unique_ptr<Player>> players;
 	std::vector<std::unique_ptr<Food>> foods;
-
-	int newID = 0;
+	
+	float recreateDeltaTime = 0;
 };
 

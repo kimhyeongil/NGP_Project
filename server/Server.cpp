@@ -43,7 +43,6 @@ Server::Server()
 	for (auto& food : foods) {
 		static int id = -1;
 		food = make_unique<Food>(id--);
-		food->SetPosition(Random::RandInt(Food::defaultSize, PlayScene::worldWidth - Food::defaultSize), Random::RandInt(Food::defaultSize, PlayScene::worldHeight - Food::defaultSize));
 	}
 	thread(&Server::Excute, this).detach();
 	thread(&Server::AcceptClient, this).detach();
@@ -86,6 +85,13 @@ void Server::Run()
 			this_thread::sleep_for(100ns);
 			end = chrono::high_resolution_clock::now();
 			deltaTime = chrono::duration_cast<chrono::nanoseconds>(end - start).count() * 1e-9;
+		}
+		recreateDeltaTime += deltaTime;
+		if (recreateDeltaTime >= recreateTime) {
+			recreateDeltaTime -= recreateTime;
+			lock_guard<mutex> lock(mutexes[EXCUTE]);
+			excuteQueue.emplace(make_unique<Command>(CMD_TYPE::RECREATE_FOOD));
+			cv.notify_all();
 		}
 		start = end;
 		Update(deltaTime);
@@ -350,6 +356,21 @@ void Server::Excute()
 			for (auto& sock : clients) {
 				send(sock, (char*)&type, sizeof(uint), 0);
 				packet->Send(sock);
+			}
+		}
+		break;
+		case CMD_TYPE::RECREATE_FOOD:
+		{
+			lock_guard<mutex> lock(mutexes[ENTITIES]);
+			int i = 0;
+			vector<FoodInfo> data;
+			data.reserve(maxReCnt);
+			for (const auto& food : foods) {
+				if (!food->active) {
+					i++;
+					food->Reset();
+					data.emplace_back(*food);
+				}
 			}
 		}
 		break;

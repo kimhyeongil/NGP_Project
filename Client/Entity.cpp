@@ -159,6 +159,8 @@ Food::Food(int id)
 	shape.setRadius(defaultSize);
 	shape.setFillColor(Random::RandColor());
 	shape.setOrigin(shape.getRadius(), shape.getRadius());
+
+	Reset();
 }
 
 Food::Food(const FoodInfo& info)
@@ -190,4 +192,12 @@ void Food::Update(double deltaTime)
 			//active = false;
 		}
 	}
+}
+
+void Food::Reset()
+{
+	active = true;
+	activeTime = 0;
+	SetPosition(Random::RandInt(Food::defaultSize, PlayScene::worldWidth - Food::defaultSize), 
+				Random::RandInt(Food::defaultSize, PlayScene::worldHeight - Food::defaultSize));
 }
