@@ -120,7 +120,6 @@ void Server::CheckCollision()
 			if (distance < combinedRadius) {
 				player1->OnCollision(player2.get());
 				player2->OnCollision(player1.get());
-				cout << "충돌" << endl;
 				//printf("%f, %f\n", distance, combinedRadius);
 				// 충돌 발생, CMD_CheckCollision 생성
 				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
@@ -276,32 +275,32 @@ void Server::Excute()
 				foodInfos.emplace_back(*f);
 			}
 			entityLock.unlock();
-			auto packet = make_shared<LoginSuccess>();
-			packet->players = infos;
-			packet->foods = foodInfos;
+			LoginSuccess packet;
+			packet.players = infos;
+			packet.foods = foodInfos;
 
 			uint type = (uint)PACKET_TYPE::LOGIN_SUCCESS;
 			type = htonl(type);
 			send(context->appendSock, (char*)&type, sizeof(uint), 0);
-			packet->Send(context->appendSock);
+			packet.Send(context->appendSock);
 		}
 		break;
 		case CMD_TYPE::PLAYER_APPEND:
 		{
 			auto context = static_pointer_cast<CMD_PlayerAppend>(cmd->context);
-			auto packet = make_shared<PlayerAppend>();
+			PlayerAppend packet;
 
-			packet->color = context->color;
-			packet->id = context->appendSock;
-			packet->x = context->x;
-			packet->y = context->y;
-			memcpy(packet->name, context->name, 16);
+			packet.color = context->color;
+			packet.id = context->appendSock;
+			packet.x = context->x;
+			packet.y = context->y;
+			memcpy(packet.name, context->name, 16);
 
 			uint type = htonl(PACKET_TYPE::PLAYER_APPEND);
 			for (auto sock : clients) {
 				if (sock != context->appendSock) {
 					send(sock, (char*)&type, sizeof(uint), 0);
-					packet->Send(sock);
+					packet.Send(sock);
 				}
 			}
 		}
@@ -316,11 +315,11 @@ void Server::Excute()
 				const auto& player = *iter;
 				player->SetDestination(player->Position().x + context->x, player->Position().y + context->y);
 
-				auto packet = make_shared<PlayerInput>(player->id, player->Destination().x, player->Destination().y);
+				PlayerInput packet{ player->id, player->Destination().x, player->Destination().y };
 				uint type = htonl(PACKET_TYPE::PLAYER_INPUT);
 				for (auto sock : clients) {
 					send(sock, (char*)&type, sizeof(uint), 0);
-					packet->Send(sock);
+					packet.Send(sock);
 				}
 			}
 		}
@@ -328,14 +327,14 @@ void Server::Excute()
 		case CMD_TYPE::LOGOUT:
 		{
 			auto context = static_pointer_cast<CMD_Logout>(cmd->context);
-			auto payload = make_shared<Logout>();
-			payload->id = context->outSock;
+			Logout packet;
+			packet.id = context->outSock;
 
 			uint type = htonl(PACKET_TYPE::LOGOUT);
 			erase(clients, context->outSock);
 			for (auto& sock : clients) {
 				send(sock, (char*)&type, sizeof(uint), 0);
-				payload->Send(sock);
+				packet.Send(sock);
 			}
 			lock_guard<mutex> entityLock(mutexes[ENTITIES]);
 			erase_if(players, [&](auto& player) {return player->id == (int)context->outSock; });
@@ -348,29 +347,41 @@ void Server::Excute()
 			auto context = static_pointer_cast<CMD_CheckCollision>(cmd->context);
 
 			// 모든 클라이언트에 충돌 정보를 알림
-			auto packet = make_shared<ConfirmCollision>();
-			packet->id1 = context->id1;
-			packet->id2 = context->id2;
+			ConfirmCollision packet;
+			packet.id1 = context->id1;
+			packet.id2 = context->id2;
 
 			uint type = htonl(PACKET_TYPE::CHECK_COLLISION);
 			for (auto& sock : clients) {
 				send(sock, (char*)&type, sizeof(uint), 0);
-				packet->Send(sock);
+				packet.Send(sock);
 			}
 		}
 		break;
 		case CMD_TYPE::RECREATE_FOOD:
 		{
-			lock_guard<mutex> lock(mutexes[ENTITIES]);
 			int i = 0;
 			vector<FoodInfo> data;
 			data.reserve(maxReCnt);
+			unique_lock<mutex> lock(mutexes[ENTITIES]);
 			for (const auto& food : foods) {
 				if (!food->active) {
 					i++;
 					food->Reset();
 					data.emplace_back(*food);
 				}
+				if (i >= maxReCnt) {
+					break;
+				}
+			}
+			lock.unlock();
+			RecreateFood packet;
+			packet.foods = data;
+
+			uint type = htonl(PACKET_TYPE::RECREATE_FOOD);
+			for (auto& sock : clients) {
+				send(sock, (char*)&type, sizeof(uint), 0);
+				packet.Send(sock);
 			}
 		}
 		break;

@@ -231,20 +231,22 @@ struct PlayerInfo {
 struct LoginSuccess : public PacketContext {
 
 	void Send(SOCKET sock) override
-	{
-		hton();
+	{	
+		LoginSuccess temp = *this;
+
+		temp.hton();
 
 		uint size = players.size();
 		size = htonl(size);
 		send(sock, (char*)&size, sizeof(uint), 0);
 
-		send(sock, (char*)players.data(), players.size() * sizeof(PlayerInfo), 0);
+		send(sock, (char*)temp.players.data(), players.size() * sizeof(PlayerInfo), 0);
 
 		size = foods.size();
 		size = htonl(size);
 		send(sock, (char*)&size, sizeof(uint), 0);
 
-		send(sock, (char*)foods.data(), foods.size() * sizeof(FoodInfo), 0);
+		send(sock, (char*)temp.foods.data(), foods.size() * sizeof(FoodInfo), 0);
 	}
 
 	void Recv(SOCKET sock) override
@@ -314,13 +316,14 @@ struct Logout : public PacketContext {
 struct RecreateFood : public PacketContext {
 	void Send(SOCKET sock) override
 	{
-		hton();
+		RecreateFood temp = *this;
+		temp.hton();
 
 		uint size = foods.size();
 		size = htonl(size);
 		send(sock, (char*)&size, sizeof(uint), 0);
 
-		send(sock, (char*)foods.data(), foods.size() * sizeof(FoodInfo), 0);
+		send(sock, (char*)temp.foods.data(), foods.size() * sizeof(FoodInfo), 0);
 	}
 
 	void Recv(SOCKET sock) override

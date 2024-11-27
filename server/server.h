@@ -18,8 +18,8 @@ private:
 		, ENTITIES
 		, SIZE
 	};
-	static constexpr float recreateTime = 5;
-	static constexpr int maxReCnt = 20;
+	static constexpr float recreateTime = 1;
+	static constexpr int maxReCnt = 100;
 public:
 	Server();
 	~Server();

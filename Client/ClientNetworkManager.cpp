@@ -111,6 +111,11 @@ void ClientNetworkManager::Recv()
 			packet.context = make_shared<ConfirmCollision>();
 		}
 		break;
+		case PACKET_TYPE::RECREATE_FOOD:
+		{
+			packet.context = make_shared<RecreateFood>();
+		}
+		break;
 		default:
 			break;
 		}

@@ -57,6 +57,7 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		entities.clear();
 		for (const auto& info : context->foods) {
 			entities.emplace_back(make_unique<Food>(info));
+			cout << entities.back()->id << endl;
 		}
 		for (int i = 1; i < context->players.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->players[i]));
@@ -110,6 +111,21 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		else if(iter1 != entities.end() && iter2 != entities.end()){
 			(*iter1)->OnCollision((*iter2).get());
 			(*iter2)->OnCollision((*iter1).get());
+		}
+	}
+	break;
+	case PACKET_TYPE::RECREATE_FOOD:
+	{
+		auto context = static_pointer_cast<RecreateFood>(packet.context);
+		for (const auto& info : context->foods) {
+			auto iter = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == info.id; });
+			cout << info.id << endl;
+			if (iter != entities.end()) {
+				auto p = dynamic_cast<Food*>(iter->get());
+				p->activeTime = info.activeTime;
+				p->active = true;
+				p->SetPosition(info.x, info.y);
+			}
 		}
 	}
 	break;

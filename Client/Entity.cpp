@@ -189,7 +189,7 @@ void Food::Update(double deltaTime)
 		color.a = 255 * (maxTime - activeTime) / maxTime;
 		shape.setFillColor(color);
 		if (activeTime > maxTime) {
-			//active = false;
+			active = false;
 		}
 	}
 }
