@@ -40,6 +40,11 @@ struct CMD_PlayerAppend {
 struct CMD_BroadCast {
 };
 struct CMD_LoginSuccess {
+	CMD_LoginSuccess(SOCKET sock,const char* name)
+		:appendSock{ sock }
+	{
+		memcpy(this->name, name, 16);
+	}
 	SOCKET appendSock;
 	char name[16];
 };

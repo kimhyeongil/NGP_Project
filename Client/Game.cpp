@@ -35,13 +35,15 @@ void Game::Run()
     string name;
     cout << "이름 입력: ";
     cin >> name;
+    PACKET packet;
+    packet.type = PACKET_TYPE::PLAYER_NAME;
 
-    // 이름 패킷 전송
-    PACKET namePacket;
-    namePacket.type = PACKET_TYPE::PLAYER_NAME;
-    strncpy(namePacket.data.name, name.c_str(), sizeof(namePacket.data.name) - 1);
-    namePacket.data.name[sizeof(namePacket.data.name) - 1] = '\0'; // NULL-terminate
-    Send(namePacket);
+    auto packetName = std::make_shared<PlayerName>();
+    memcpy(packetName->name, name.c_str(), name.length() + 1); // 이름을 PlayerName에 복사
+
+    packet.context = packetName; // shared_ptr로 할당
+
+    Send(packet);
 
     sf::Clock clock;
     while (window.isOpen())

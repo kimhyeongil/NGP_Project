@@ -65,11 +65,30 @@ void Server::AcceptClient()
 		if (client_sock == INVALID_SOCKET) {
 			break;
 		}
-		auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
-		cmd->context = make_shared<CMD_LoginSuccess>(client_sock);
-		lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
-		excuteQueue.emplace(move(cmd));
-		cv.notify_all();
+		uint type;
+		if (recv(client_sock, (char*)&type, sizeof(uint), MSG_WAITALL) == SOCKET_ERROR) {
+				break;
+		}
+		type = ntohl(type);
+		if(type==PACKET_TYPE::PLAYER_NAME){
+		auto input = make_shared<PlayerName>();
+			input->Recv(client_sock);
+			//ioLock.lock();
+			print("[TCP 서버] 클라이언트 입력:포트 번호 = {}, 이름 ({})\n", ntohs(clientaddr.sin_port), input->name);
+		
+			auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
+			//auto context = make_shared<PlayerName>();
+			//memcpy(context->name, input->name, 16);
+			cmd->context = make_shared<CMD_LoginSuccess>(client_sock,input->name);
+			lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
+			excuteQueue.emplace(move(cmd));
+			cv.notify_all();
+		}
+		//auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
+		//cmd->context = make_shared<CMD_LoginSuccess>(client_sock);
+		//lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
+		//excuteQueue.emplace(move(cmd));
+		//cv.notify_all();
 	}
 }
 
@@ -97,7 +116,7 @@ void Server::Run()
 		}
 		if (broadcastTime >= 1.0) {
 			broadcastTime -= 1.0;
-			BroadCastRealInfo();
+			//BroadCastRealInfo();
 		}
 		start = end;
 		Update(deltaTime);
@@ -227,6 +246,28 @@ void Server::ProcessClient(SOCKET client_sock)
 			cv.notify_all();
 		}
 		break;
+		//case PACKET_TYPE::PLAYER_NAME:
+		//{
+		//	auto input = make_shared<PlayerName>();
+		//	input->Recv(client_sock);
+		//
+		//	// 입력 내용 출력
+		//	ioLock.lock();
+		//	print("[TCP 서버] 클라이언트 입력: IP 주소 = {}, 포트 번호 = {}, 이름 ({})\n",addr, ntohs(clientaddr.sin_port), input->name);
+		//
+		//	auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
+		//	auto context = make_shared<PlayerName>();
+		//	memcpy(context->name, input->name, 16);
+		//	//context->name[sizeof(context->name) - 1] = '\0';  // Null 종료 보장
+		//
+		//	cmd->context = context;
+		//
+		//	lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
+		//	excuteQueue.emplace(move(cmd));  
+		//
+		//	cv.notify_all();
+		//}
+		//break;
 		default:
 			break;
 		}
@@ -268,16 +309,16 @@ void Server::Excute()
 			player->color = Random::RandInt(0, colors.size() - 1);
 			// 나중에 로그인 시 받은 이름으로 변경할 예정
 			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
-			string name = "Player" + to_string(players.size());
-			memcpy(player->name, name.c_str(), name.length());
+			// name = "Player" + to_string(players.size());
+			memcpy(player->name, context->name, sizeof(player->name));
 			vector<PlayerInfo> infos;
 			infos.emplace_back(*player);
 			for (const auto& p : players) {
 				infos.emplace_back(*p);
 			}
 			auto newCMD = make_unique<Command>(CMD_TYPE::PLAYER_APPEND);
-			auto newContext = make_shared<CMD_PlayerAppend>(context->appendSock, player->Position().x, player->Position().y, player->color, name.c_str());
-			memcpy(newContext->name, name.c_str(), 16);
+			auto newContext = make_shared<CMD_PlayerAppend>(context->appendSock, player->Position().x, player->Position().y, player->color, context->name);
+			memcpy(newContext->name, context->name, 16);
 			newCMD->context = newContext;
 
 			queueLock.lock();
