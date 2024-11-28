@@ -41,6 +41,7 @@ struct CMD_BroadCast {
 };
 struct CMD_LoginSuccess {
 	SOCKET appendSock;
+	char name[16];
 };
 
 struct CMD_PlayerInput {

@@ -116,6 +116,11 @@ void ClientNetworkManager::Recv()
 			packet.context = make_shared<RecreateFood>();
 		}
 		break;
+		case PACKET_TYPE::PLAYER_NAME:
+		{
+			packet.context = make_shared<PlayerName>();
+		}
+		break;
 		default:
 			break;
 		}

@@ -227,7 +227,53 @@ struct PlayerInfo {
 	int color;
 	int size;
 };
+struct BroadCast : public PacketContext {
 
+	void Send(SOCKET sock) override
+	{
+		BroadCast temp = *this;
+
+		temp.hton();
+
+		uint size = players.size();
+		size = htonl(size);
+		send(sock, (char*)&size, sizeof(uint), 0);
+
+		send(sock, (char*)temp.players.data(), players.size() * sizeof(PlayerInfo), 0);
+
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		uint size;
+		recv(sock, (char*)&size, sizeof(uint), 0);
+		size = ntohl(size);
+
+		players.resize(size);
+		recv(sock, (char*)players.data(), players.size() * sizeof(PlayerInfo), 0);
+
+
+		ntoh();
+	}
+
+	void ntoh() override
+	{
+		for (auto& player : players) {
+			player.ntoh();
+		}
+
+	}
+
+	void hton() override
+	{
+		for (auto& player : players) {
+			player.hton();
+		}
+
+	}
+
+	std::vector<PlayerInfo> players;
+};
 struct LoginSuccess : public PacketContext {
 
 	void Send(SOCKET sock) override
@@ -355,6 +401,41 @@ struct RecreateFood : public PacketContext {
 	std::vector<FoodInfo> foods;
 };
 
+struct PlayerName : public PacketContext {
+	struct Data {
+		Data() = default;
+		Data(const PlayerName& context) { memcpy(name, context.name, 16); }
+		char name[16];
+	};
+
+	PlayerName& operator=(const Data& data) {
+		memcpy(name, data.name, 16);
+		return *this;
+	}
+
+	void Send(SOCKET sock) override {
+		PlayerName temp = *this;
+		temp.hton();
+		Data data = temp;
+		send(sock, (char*)&data, sizeof(Data), 0);
+	}
+
+	void Recv(SOCKET sock) override {
+		Data data;
+		recv(sock, (char*)&data, sizeof(Data), 0);
+		*this = data;
+		ntoh();
+	}
+
+	void ntoh() override {
+		
+	}
+	void hton() override {
+		
+	}
+	char name[16];
+};
+
 enum PACKET_TYPE : uint
 {
 
@@ -364,6 +445,8 @@ enum PACKET_TYPE : uint
 	,LOGOUT
 	,CHECK_COLLISION
 	,RECREATE_FOOD
+	,BROADCAST
+	, PLAYER_NAME
 };
 
 struct PACKET {

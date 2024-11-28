@@ -1,122 +1,98 @@
-#include <iostream>
-#include <string>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include "..//Common.h"
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <cstring>
+#include "../Common.h"
 
-#pragma comment(lib, "ws2_32")
-#define SERVER_IP "127.0.0.1"
-#define SERVER_PORT 9000
-#define BUFSIZE 512
 
-uint hton_requestType(uint type) {
-    return static_cast<uint>(htonl(static_cast<int>(type)));
+#pragma comment(lib, "ws2_32.lib")
+
+void handleServerMessages(SOCKET sock) {
+    while (true) {
+        uint packetType;
+        if (recv(sock, (char*)&packetType, sizeof(uint), MSG_WAITALL) <= 0) {
+            std::cerr << "Server disconnected or error occurred.\n";
+            break;
+        }
+
+        packetType = ntohl(packetType);
+
+        switch (packetType) {
+        case PACKET_TYPE::BROADCAST: {
+            BroadCast broadcastPacket;
+            broadcastPacket.Recv(sock);
+
+            std::cout << "Received BROADCAST:\n";
+            for (const auto& player : broadcastPacket.players) {
+                std::cout << "Player ID: " << player.id
+                    << ", Position: (" << player.x << ", " << player.y << ")"
+                    << ", Color: " << player.color << "\n";
+            }
+            break;
+        }
+        default:
+           // std::cout << "Unknown packet type received: " << packetType << "\n";
+            break;
+        }
+
+    }
 }
 
-uint ntoh_requestType(uint type) {
-    return static_cast<uint>(ntohl(static_cast<int>(type)));
-}
-struct PlayerInfo {
-    int id;
-    int color;
-    float posX;
-    float posY;
-};
 int main() {
     WSADATA wsa;
-    SOCKET sock;
-    sockaddr_in server_addr;
-    char buf[BUFSIZE];
-    int retval;
-
-    // Winsock 초기화
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
-        std::cerr << "WSAStartup() failed.\n";
-        return -1;
+        std::cerr << "Failed to initialize Winsock.\n";
+        return 1;
     }
 
-    // 소켓 생성
-    sock = socket(AF_INET, SOCK_STREAM, 0);
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == INVALID_SOCKET) {
-        std::cerr << "socket() failed.\n";
+        std::cerr << "Failed to create socket.\n";
         WSACleanup();
-        return -1;
+        return 1;
     }
 
-    // 서버 주소 설정
-    server_addr.sin_family = AF_INET;
-    inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr);
-    server_addr.sin_port = htons(SERVER_PORT);
+    sockaddr_in serverAddr;
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
 
-    // 서버에 연결
-    if (connect(sock, (sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
-        std::cerr << "connect() failed.\n";
+    // Use inet_pton instead of inet_addr
+    if (inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr) <= 0) {
+        std::cerr << "Invalid IP address format.\n";
         closesocket(sock);
         WSACleanup();
-        return -1;
+        return 1;
     }
 
-    // LOGIN_TRY 요청 타입 전송
-    uint requestType = hton_requestType(LOGIN_TRY);
-    retval = send(sock, reinterpret_cast<char*>(&requestType), static_cast<int>(sizeof(requestType)), 0);
-    if (retval == SOCKET_ERROR) {
-        std::cerr << "Failed to send LOGIN_TRY request.\n";
+    serverAddr.sin_port = htons(9000);
+
+    if (connect(sock, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+        std::cerr << "Failed to connect to server.\n";
         closesocket(sock);
         WSACleanup();
-        return -1;
+        return 1;
     }
+
+    std::cout << "Connected to server.\n";
+
+    // 서버 메시지 수신용 스레드
+    std::thread listener(handleServerMessages, sock);
+    listener.detach();
+
+    // 사용자 입력 시뮬레이션 (종료 명령 전까지 유지)
     while (true) {
-        // 클라이언트 이름 전송
-        std::string clientName = "Player1";
-        strncpy_s(buf, clientName.c_str(), sizeof(buf) - 1);
-        buf[sizeof(buf) - 1] = '\0';
-        retval = send(sock, buf, static_cast<int>(strlen(buf) + 1), 0);
-        if (retval == SOCKET_ERROR) {
-            std::cerr << "Failed to send client name.\n";
-            closesocket(sock);
-            WSACleanup();
-            return -1;
+        std::string input;
+        std::getline(std::cin, input);
+
+        if (input == "exit") {
+            break;
         }
 
-        // 서버로부터 LOGIN_SUCCESS 응답 수신
-        retval = recv(sock, buf, sizeof(uint), 0); // 패킷 타입 수신
-        if (retval <= 0) {
-            std::cerr << "Failed to receive response from server.\n";
-            closesocket(sock);
-            WSACleanup();
-            return -1;
-        }
-        uint responseType;
-        memcpy(&responseType, buf, sizeof(uint));
-        responseType = ntoh_requestType(responseType);
-
-        if (responseType == LOGIN_SUCCESS) {
-            
-            PlayerCount cnt;
-            cnt.Recv(sock);
-            
-
-            std::cout << "Player Count: " << cnt.cnt << std::endl;
-
-            // 플레이어 정보 수신
-            for (uint i = 0; i < cnt.cnt; ++i) {
-                LoginSuccess playerInfo;
-                playerInfo.Recv(sock);
-                
-                std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
-                    << ", Position: (" << playerInfo.x << ", " << playerInfo.y << ")\n";
-            }
-        }
-        if (responseType == PLAYER_APPEND) {
-            
-            PlayerAppend playerInfo;
-            playerInfo.Recv(sock);
-            
-            std::cout << "Player ID: " << playerInfo.id << ", Color: " << playerInfo.color
-                << ", Position: (" << playerInfo.x << ", " << playerInfo.y << ")\n";
-
-        }
+        std::cout << "Type 'exit' to quit.\n";
     }
+
     closesocket(sock);
     WSACleanup();
     return 0;

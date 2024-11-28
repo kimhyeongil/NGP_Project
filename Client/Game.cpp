@@ -32,6 +32,17 @@ void Game::Send(PACKET packet)
 
 void Game::Run()
 {
+    string name;
+    cout << "이름 입력: ";
+    cin >> name;
+
+    // 이름 패킷 전송
+    PACKET namePacket;
+    namePacket.type = PACKET_TYPE::PLAYER_NAME;
+    strncpy(namePacket.data.name, name.c_str(), sizeof(namePacket.data.name) - 1);
+    namePacket.data.name[sizeof(namePacket.data.name) - 1] = '\0'; // NULL-terminate
+    Send(namePacket);
+
     sf::Clock clock;
     while (window.isOpen())
     {
