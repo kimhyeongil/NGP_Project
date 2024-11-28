@@ -10,10 +10,6 @@ Scene::Scene()
 	:view(FloatRect(0, 0, Game::windowWidth, Game::windowHeight))
 {
 	view.setSize(Game::windowWidth, Game::windowHeight);
-	for (int i = 0; i < 50; ++i) {
-		entities.emplace_back(make_unique<Food>());
-		entities.back()->SetPosition(Random::RandInt(200, 150), Random::RandInt(200, 150));
-	}
 }
 
 PlayScene::PlayScene()
@@ -24,14 +20,14 @@ PlayScene::PlayScene()
 		sf::RectangleShape line(sf::Vector2f(lineThickness, worldHeight));
 		line.setPosition(x - lineThickness / 2.0f, 0);
 		line.setFillColor(lineColor);
-		world.push_back(line);
+		world.emplace_back(line);
 	}
 
 	for (int y = 0; y < worldHeight; y += space) {
 		sf::RectangleShape line(Vector2f(worldWidth, lineThickness));
 		line.setPosition(0, y - lineThickness / 2.0f);
 		line.setFillColor(lineColor);
-		world.push_back(line);
+		world.emplace_back(line);
 	}
 }
 
@@ -61,6 +57,7 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		entities.clear();
 		for (const auto& info : context->foods) {
 			entities.emplace_back(make_unique<Food>(info));
+			cout << entities.back()->id << endl;
 		}
 		for (int i = 1; i < context->players.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->players[i]));
@@ -94,6 +91,42 @@ void PlayScene::HandlePacket(const PACKET& packet)
 	{
 		auto context = static_pointer_cast<Logout>(packet.context);
 		erase_if(entities, [&](auto& entity) {return entity->id == context->id; });
+	}
+	break;
+	case PACKET_TYPE::CHECK_COLLISION:
+	{
+		auto context = static_pointer_cast<ConfirmCollision>(packet.context);
+
+		auto iter1 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == context->id1; });
+		auto iter2 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == context->id2; });
+
+		if (iter1 == entities.end() && context->id1 == player->id) {
+			player->OnCollision((*iter2).get());
+			(*iter2)->OnCollision(player.get());
+		}
+		else if (iter2 == entities.end() && context->id2 == player->id) {
+			player->OnCollision((*iter1).get());
+			(*iter1)->OnCollision(player.get());
+		}
+		else if(iter1 != entities.end() && iter2 != entities.end()){
+			(*iter1)->OnCollision((*iter2).get());
+			(*iter2)->OnCollision((*iter1).get());
+		}
+	}
+	break;
+	case PACKET_TYPE::RECREATE_FOOD:
+	{
+		auto context = static_pointer_cast<RecreateFood>(packet.context);
+		for (const auto& info : context->foods) {
+			auto iter = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == info.id; });
+			cout << info.id << endl;
+			if (iter != entities.end()) {
+				auto p = dynamic_cast<Food*>(iter->get());
+				p->activeTime = info.activeTime;
+				p->active = true;
+				p->SetPosition(info.x, info.y);
+			}
+		}
 	}
 	break;
 	default:

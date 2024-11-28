@@ -5,38 +5,35 @@
 
 class Entity : public sf::Drawable {
 public:
-	Entity(int id = -10000) :id{ id } {}
-
-	bool Active() const { return active; }
-	void SetActive(bool newActive);
-	virtual void OnActive() {}
-	virtual void OnInactive() {}
+	Entity(int id) :id{ id } {}
 
 	virtual void Update(double deltaTime) {}
+	virtual void OnCollision(const Entity* collider) {}
 
 	sf::Vector2f Position() const { return shape.getPosition(); }
+	float Radius() const { return shape.getRadius(); }
+
 	virtual void SetPosition(const sf::Vector2f& pos) { shape.setPosition(pos); }
 	virtual void SetPosition(float x, float y) { shape.setPosition(sf::Vector2f{ x, y }); }
 
 	virtual void draw(sf::RenderTarget&, sf::RenderStates) const;
 
 	int id;
-
+	bool active = true;
 protected:
 	sf::CircleShape shape;
-private:
-	bool active = true;
 };
 
 class Player : public Entity {
 public:
-	static constexpr float startSize = 20.f;
+	static constexpr int startSize = 200;
 
 	Player(int id);
 	Player(const PlayerInfo&);
 	Player(const PlayerAppend&);
 
 	void Update(double deltaTime) override;
+	void OnCollision(const Entity* collider) override;
 
 	void SetDestination(const sf::Vector2f&);
 	void SetDestination(float x, float y);
@@ -49,7 +46,7 @@ public:
 
 	char name[16];
 	float speed = 200;
-	float size{ startSize };
+	int size{ startSize };
 	unsigned int color = 0;
 private:
 	sf::Vector2f destination;
@@ -61,12 +58,12 @@ class Food : public Entity{
 public:
 	static constexpr float defaultSize = 5;
 
-	Food();
+	Food(int id);
 	Food(const FoodInfo&);
 
-	void OnActive() override;
-
+	void Reset();
 	void Update(double deltaTime) override;
+	void OnCollision(const Entity* collider) override;
 
 	float activeTime = 0;
 };

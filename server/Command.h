@@ -10,6 +10,7 @@ enum class CMD_TYPE : uint {
 	PLAYER_INPUT,
 	LOGOUT,
 	CHECK_COLLISION,
+	RECREATE_FOOD
 };
 
 struct Command {
