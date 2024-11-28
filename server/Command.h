@@ -10,7 +10,8 @@ enum class CMD_TYPE : uint {
 	PLAYER_INPUT,
 	LOGOUT,
 	CHECK_COLLISION,
-	RECREATE_FOOD
+	RECREATE_FOOD,
+	BROADCAST,
 };
 
 struct Command {
@@ -36,7 +37,8 @@ struct CMD_PlayerAppend {
 	int color;
 	char name[16];
 };
-
+struct CMD_BroadCast {
+};
 struct CMD_LoginSuccess {
 	SOCKET appendSock;
 };

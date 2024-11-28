@@ -77,6 +77,7 @@ void Server::Run()
 {
 	// 업데이트, 충돌 처리 등 필요
 	auto start = chrono::high_resolution_clock::now();
+	double broadcastTime = 0.0;
 	while (true)
 	{
 		auto end = chrono::high_resolution_clock::now();
@@ -87,17 +88,32 @@ void Server::Run()
 			deltaTime = chrono::duration_cast<chrono::nanoseconds>(end - start).count() * 1e-9;
 		}
 		recreateDeltaTime += deltaTime;
+		broadcastTime += deltaTime;
 		if (recreateDeltaTime >= recreateTime) {
 			recreateDeltaTime -= recreateTime;
 			lock_guard<mutex> lock(mutexes[EXCUTE]);
 			excuteQueue.emplace(make_unique<Command>(CMD_TYPE::RECREATE_FOOD));
 			cv.notify_all();
 		}
+		if (broadcastTime >= 1.0) {
+			broadcastTime -= 1.0;
+			BroadCastRealInfo();
+		}
 		start = end;
 		Update(deltaTime);
 		CheckCollision();
 	}
 }
+void Server::BroadCastRealInfo()
+{
+	auto cmd = make_unique<Command>(CMD_TYPE::BROADCAST);
+	cmd->context = make_shared<CMD_BroadCast>(); // 필요한 데이터를 CMD_BroadCast에 추가
+
+	lock_guard<mutex> lock(mutexes[EXCUTE]);
+	excuteQueue.emplace(move(cmd));
+	cv.notify_all();
+}
+
 
 void Server::CheckCollision()
 {
@@ -283,6 +299,26 @@ void Server::Excute()
 			type = htonl(type);
 			send(context->appendSock, (char*)&type, sizeof(uint), 0);
 			packet.Send(context->appendSock);
+		}
+		break;
+		case CMD_TYPE::BROADCAST:
+		{
+			// 모든 클라이언트에게 현재 플레이어들의 위치를 전송
+			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
+			vector<PlayerInfo> infos;
+			for (const auto& player : players) {
+				infos.emplace_back(*player);
+			}
+			entityLock.unlock();
+
+			BroadCast packet;
+			packet.players = infos;
+
+			uint type = htonl(PACKET_TYPE::BROADCAST);
+			for (auto sock : clients) {
+				send(sock, (char*)&type, sizeof(uint), 0);
+				packet.Send(sock);
+			}
 		}
 		break;
 		case CMD_TYPE::PLAYER_APPEND:
