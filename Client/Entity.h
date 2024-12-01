@@ -13,6 +13,8 @@ public:
 	sf::Vector2f Position() const { return shape.getPosition(); }
 	float Radius() const { return shape.getRadius(); }
 
+	virtual void SetSize(float r) { shape.setRadius(r); shape.setOrigin(shape.getRadius(), shape.getRadius()); }
+
 	virtual void SetPosition(const sf::Vector2f& pos) { shape.setPosition(pos); }
 	virtual void SetPosition(float x, float y) { shape.setPosition(sf::Vector2f{ x, y }); }
 
@@ -20,8 +22,9 @@ public:
 
 	int id;
 	bool active = true;
-protected:
 	sf::CircleShape shape;
+
+protected:
 };
 
 class Player : public Entity {
@@ -42,6 +45,7 @@ public:
 	void SetPosition(const sf::Vector2f&) override;
 	void SetPosition(float x, float y) override { SetPosition(sf::Vector2f{ x,y }); };
 
+	void SetSize(float r) override;
 	void SetColor(uint newColor);
 
 	void draw(sf::RenderTarget&, sf::RenderStates) const override;

@@ -2,7 +2,9 @@
 #include "Entity.h"
 #include "Game.h"
 #include "Random.h"
+#include "Button.h"
 #include <iostream>
+
 using namespace std;
 using namespace sf;
 
@@ -13,6 +15,13 @@ Scene::Scene()
 }
 
 PlayScene::PlayScene()
+	: Scene{}
+	, button{ make_unique<Button>("Restart?",
+		Vector2f{Game::windowWidth / 4.f,Game::windowHeight / 4.f},
+		[this]() {
+			PACKET packet{ PACKET_TYPE::RESTART_TO_SERVER };
+			packet.context = make_shared<RestartToServer>(player->id);
+			Game::Instance().Send(packet); }) }
 {
 	Color lineColor{ 128,128,128 };
 	float lineThickness = 2.5;
@@ -34,7 +43,8 @@ PlayScene::PlayScene()
 void PlayScene::HandleEvent(const sf::Event& event)
 {
 	if (event.type == sf::Event::MouseButtonPressed &&
-		event.mouseButton.button == sf::Mouse::Left) {
+		event.mouseButton.button == sf::Mouse::Left &&
+		player->active) {
 		auto destination = Game::Instance().WorldMouse(Vector2i{ event.mouseButton.x, event.mouseButton.y });
 		player->SetDestination(destination);
 		auto dir = destination - player->Position();
@@ -43,6 +53,7 @@ void PlayScene::HandleEvent(const sf::Event& event)
 		packet.context = make_shared<PlayerInput>(player->id, dir.x, dir.y);
 		Game::Instance().Send(packet);
 	}
+	button->HandleEvent(event);
 }
 
 void PlayScene::HandlePacket(const PACKET& packet)
@@ -102,10 +113,18 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		if (iter1 == entities.end() && context->id1 == player->id) {
 			player->OnCollision((*iter2).get());
 			(*iter2)->OnCollision(player.get());
+			if (!player->active) {
+				button->active = true;
+				button->shape.setPosition(view.getCenter());
+			}
 		}
 		else if (iter2 == entities.end() && context->id2 == player->id) {
 			player->OnCollision((*iter1).get());
 			(*iter1)->OnCollision(player.get());
+			if (!player->active) {
+				button->active = true;
+				button->shape.setPosition(view.getCenter());
+			}
 		}
 		else if(iter1 != entities.end() && iter2 != entities.end()){
 			(*iter1)->OnCollision((*iter2).get());
@@ -134,7 +153,11 @@ void PlayScene::HandlePacket(const PACKET& packet)
 			auto iter = find_if(entities.begin(), entities.end(), [&info](const auto& e) {return e->id == info.id; });
 			if (iter != entities.end()) {
 				auto& p = *iter;
-				p->SetPosition(info.x, info.y);
+
+				p->shape.setPosition(info.x, info.y);
+			}
+			else if(player->id == info.id){
+				player->shape.setPosition(info.x, info.y);
 			}
 		}
 	}
@@ -146,6 +169,7 @@ void PlayScene::HandlePacket(const PACKET& packet)
 			player->active = true;
 			player->SetPosition(context->x, context->y);
 			player->SetColor(context->color);
+			player->SetSize(Player::startSize);
 		}
 		else {
 			auto iter = find_if(entities.begin(), entities.end(), [&context](const auto& e) {return context->id == e->id; });
@@ -154,6 +178,7 @@ void PlayScene::HandlePacket(const PACKET& packet)
 				p->SetColor(context->color);
 				p->SetPosition(context->x, context->y);
 				p->active = true;
+				p->SetSize(Player::startSize);
 			}
 		}
 	}
@@ -173,9 +198,7 @@ void PlayScene::Update(const sf::Time& time)
 	player->Update(deltaTime);
 
 	if (!player->active) {
-		PACKET packet{ PACKET_TYPE::RESTART_TO_SERVER };
-		packet.context = make_shared<RestartToServer>(player->id);
-		Game::Instance().Send(packet);
+
 	}
 
 	float halfViewWidth = Game::windowWidth / 2.0f;
@@ -208,4 +231,5 @@ void PlayScene::Render(sf::RenderWindow& window)
 	}
 
 	window.draw(*player);
+	window.draw(*button);
 }

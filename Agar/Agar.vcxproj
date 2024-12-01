@@ -158,7 +158,10 @@
     <ClCompile Include="..\Client\Entity.cpp" />
     <ClCompile Include="..\Client\Game.cpp" />
     <ClCompile Include="..\Client\Random.cpp" />
-    <ClCompile Include="..\Client\Scene.cpp" />
+    <ClCompile Include="..\Client\Scene.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../Agar;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -169,6 +172,7 @@
     <ClInclude Include="..\Client\Random.h" />
     <ClInclude Include="..\Client\Scene.h" />
     <ClInclude Include="..\Common.h" />
+    <ClInclude Include="Button.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

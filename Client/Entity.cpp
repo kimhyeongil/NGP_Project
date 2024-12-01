@@ -87,6 +87,12 @@ void Player::SetPosition(const sf::Vector2f& pos)
 
 }
 
+void Player::SetSize(float r)
+{
+	size = r;
+	Entity::SetSize(size / 10.f);
+}
+
 void Player::SetColor(uint newColor)
 {
 	if (color != newColor) {

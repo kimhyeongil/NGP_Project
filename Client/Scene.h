@@ -36,4 +36,5 @@ private:
 	std::vector<sf::RectangleShape> world;
 
 	std::unique_ptr<class Player> player;
+	std::unique_ptr<class Button> button;
 };
