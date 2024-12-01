@@ -121,6 +121,16 @@ void ClientNetworkManager::Recv()
 			packet.context = make_shared<PlayerName>();
 		}
 		break;
+		case PACKET_TYPE::BROADCAST:
+		{
+			packet.context = make_shared<BroadCast>();
+		}
+		break;
+		case PACKET_TYPE::RESTART_TO_CLIENT:
+		{
+			packet.context = make_shared<RestartToClient>();
+		}
+		break;
 		default:
 			break;
 		}

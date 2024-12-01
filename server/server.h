@@ -33,7 +33,7 @@ private:
 
 	void CheckCollision();
 	void Update(double deltaTime);
-	void BroadCastRealInfo();
+
 private:
 	SOCKET listen_sock;
 

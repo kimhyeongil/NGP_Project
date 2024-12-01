@@ -12,6 +12,7 @@ enum class CMD_TYPE : uint {
 	CHECK_COLLISION,
 	RECREATE_FOOD,
 	BROADCAST,
+	PLAYER_RESTART
 };
 
 struct Command {
@@ -37,8 +38,7 @@ struct CMD_PlayerAppend {
 	int color;
 	char name[16];
 };
-struct CMD_BroadCast {
-};
+
 struct CMD_LoginSuccess {
 	CMD_LoginSuccess(SOCKET sock,const char* name)
 		:appendSock{ sock }
@@ -61,4 +61,8 @@ struct CMD_Logout {
 struct CMD_CheckCollision {
 	int id1;
 	int id2;
+};
+
+struct CMD_Restart {
+	int id;
 };

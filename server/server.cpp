@@ -111,23 +111,15 @@ void Server::Run()
 		}
 		if (broadcastTime >= 1.0) {
 			broadcastTime -= 1.0;
-			//BroadCastRealInfo();
+			lock_guard<mutex> lock(mutexes[EXCUTE]);
+			excuteQueue.emplace(make_unique<Command>(CMD_TYPE::BROADCAST));
+			cv.notify_all();
 		}
 		start = end;
 		Update(deltaTime);
 		CheckCollision();
 	}
 }
-void Server::BroadCastRealInfo()
-{
-	auto cmd = make_unique<Command>(CMD_TYPE::BROADCAST);
-	cmd->context = make_shared<CMD_BroadCast>(); // 필요한 데이터를 CMD_BroadCast에 추가
-
-	lock_guard<mutex> lock(mutexes[EXCUTE]);
-	excuteQueue.emplace(move(cmd));
-	cv.notify_all();
-}
-
 
 void Server::CheckCollision()
 {
@@ -235,6 +227,19 @@ void Server::ProcessClient(SOCKET client_sock)
 			context->x = input->x;
 			context->y = input->y;
 			cmd->context = context;
+
+			lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
+			excuteQueue.emplace(move(cmd));
+			cv.notify_all();
+		}
+		break;
+		case PACKET_TYPE::RESTART_TO_SERVER: 
+		{
+			auto input = make_shared<RestartToServer>();
+			input->Recv(client_sock);
+
+			auto cmd = make_unique<Command>(CMD_TYPE::PLAYER_RESTART);
+			cmd->context = make_shared<CMD_Restart>(input->id);
 
 			lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
 			excuteQueue.emplace(move(cmd));
@@ -432,6 +437,36 @@ void Server::Excute()
 			for (auto& sock : clients) {
 				send(sock, (char*)&type, sizeof(uint), 0);
 				packet.Send(sock);
+			}
+		}
+		break;
+		case CMD_TYPE::PLAYER_RESTART:
+		{
+			auto context = static_pointer_cast<CMD_Restart>(cmd->context);
+
+			unique_lock<mutex> lock(mutexes[ENTITIES]);
+			auto iter = find_if(players.begin(), players.end(), [&](const auto& e) {return e->id == context->id; });
+			if (iter != players.end()) {
+				const auto& player = *iter;
+				player->SetPosition(Random::RandInt(player->startSize, PlayScene::worldWidth - player->startSize)
+								   ,Random::RandInt(player->startSize, PlayScene::worldWidth - player->startSize));
+				player->active = true;
+				player->color = Random::RandInt(0, colors.size() - 1);
+
+				RestartToClient context;
+				context.color = player->color;
+				context.x = player->Position().x;
+				context.y = player->Position().y;
+				context.id = player->id;
+				lock.unlock();
+
+				uint type = PACKET_TYPE::RESTART_TO_CLIENT;
+				type = htonl(type);
+
+				for (const auto& client : clients) {
+					send(client, (char*)&type, sizeof(uint), 0);
+					context.Send(client);
+				}
 			}
 		}
 		break;

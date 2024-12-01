@@ -227,6 +227,7 @@ struct PlayerInfo {
 	int color;
 	int size;
 };
+
 struct BroadCast : public PacketContext {
 
 	void Send(SOCKET sock) override
@@ -274,6 +275,7 @@ struct BroadCast : public PacketContext {
 
 	std::vector<PlayerInfo> players;
 };
+
 struct LoginSuccess : public PacketContext {
 
 	void Send(SOCKET sock) override
@@ -436,6 +438,83 @@ struct PlayerName : public PacketContext {
 	char name[16];
 };
 
+struct RestartToServer : public PacketContext {
+	RestartToServer(int id = 0) :id{ id } {}
+	void Send(SOCKET sock) override
+	{
+		int data = htonl(id);
+		send(sock, (char*)&data, sizeof(int), 0);
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		int data;
+		recv(sock, (char*)&data, sizeof(int), 0);
+		id = ntohl(data);
+	}
+
+	void ntoh() override {}
+
+	void hton() override {}
+
+	int id;
+};
+
+struct RestartToClient : public PacketContext {
+	struct Data {
+		Data() = default;
+		Data(const RestartToClient& context) : id{ context.id }, x{ context.x }, y{ context.y }, color{ context.color } {}
+		int id;
+		int color;
+		float x, y;
+	};
+
+	RestartToClient& operator=(const Data& data)
+	{
+		id = data.id;
+		x = data.x;
+		y = data.y;
+		color = data.color;
+		return *this;
+	}
+
+	void Send(SOCKET sock) override
+	{
+		RestartToClient temp = *this;
+		temp.hton();
+		Data data = temp;
+		send(sock, (char*)&data, sizeof(Data), 0);
+	}
+
+	void Recv(SOCKET sock) override
+	{
+		Data data;
+		recv(sock, (char*)&data, sizeof(Data), 0);
+		*this = data;
+		ntoh();
+	}
+
+	void ntoh() override
+	{
+		id = ntohl(id);
+		color = ntohl(color);
+		uint tempx; memcpy(&tempx, &x, sizeof(float)); x = ntohf(tempx);
+		uint tempy; memcpy(&tempy, &y, sizeof(float)); y = ntohf(tempy);
+	}
+
+	void hton() override
+	{
+		id = htonl(id);
+		color = htonl(color);
+		uint tempx = htonf(x); memcpy(&x, &tempx, sizeof(float));
+		uint tempy = htonf(y); memcpy(&y, &tempy, sizeof(float));
+	}
+
+	int id;
+	float x, y;
+	int color;
+};
+
 enum PACKET_TYPE : uint
 {
 
@@ -447,9 +526,14 @@ enum PACKET_TYPE : uint
 	,RECREATE_FOOD
 	,BROADCAST
 	, PLAYER_NAME
+	,RESTART_TO_SERVER
+	,RESTART_TO_CLIENT
 };
 
 struct PACKET {
+	PACKET() = default;
+	PACKET(PACKET_TYPE type) :type{ type } {}
+
 	uint type;
 
 	std::shared_ptr<PacketContext> context;

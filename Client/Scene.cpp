@@ -57,7 +57,6 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		entities.clear();
 		for (const auto& info : context->foods) {
 			entities.emplace_back(make_unique<Food>(info));
-			cout << entities.back()->id << endl;
 		}
 		for (int i = 1; i < context->players.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->players[i]));
@@ -77,7 +76,7 @@ void PlayScene::HandlePacket(const PACKET& packet)
 			player->SetDestination(context->x, context->y);
 		}
 		else {
-			auto iter = find_if(entities.begin(), entities.end(), [&](const auto& entity) {return entity->id == context->id; });
+			auto iter = find_if(entities.begin(), entities.end(), [&context](const auto& entity) {return entity->id == context->id; });
 			if (iter != entities.end()) {
 				if (Player* enemy = dynamic_cast<Player*>((*iter).get()); enemy != nullptr) {
 					enemy->SetDestination(context->x, context->y);
@@ -90,15 +89,15 @@ void PlayScene::HandlePacket(const PACKET& packet)
 	case PACKET_TYPE::LOGOUT:
 	{
 		auto context = static_pointer_cast<Logout>(packet.context);
-		erase_if(entities, [&](auto& entity) {return entity->id == context->id; });
+		erase_if(entities, [&context](auto& entity) {return entity->id == context->id; });
 	}
 	break;
 	case PACKET_TYPE::CHECK_COLLISION:
 	{
 		auto context = static_pointer_cast<ConfirmCollision>(packet.context);
 
-		auto iter1 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == context->id1; });
-		auto iter2 = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == context->id2; });
+		auto iter1 = find_if(entities.begin(), entities.end(), [&context](const auto& e) {return e->id == context->id1; });
+		auto iter2 = find_if(entities.begin(), entities.end(), [&context](const auto& e) {return e->id == context->id2; });
 
 		if (iter1 == entities.end() && context->id1 == player->id) {
 			player->OnCollision((*iter2).get());
@@ -118,13 +117,43 @@ void PlayScene::HandlePacket(const PACKET& packet)
 	{
 		auto context = static_pointer_cast<RecreateFood>(packet.context);
 		for (const auto& info : context->foods) {
-			auto iter = find_if(entities.begin(), entities.end(), [&](const auto& e) {return e->id == info.id; });
-			cout << info.id << endl;
+			auto iter = find_if(entities.begin(), entities.end(), [&info](const auto& e) {return e->id == info.id; });
 			if (iter != entities.end()) {
 				auto p = dynamic_cast<Food*>(iter->get());
 				p->activeTime = info.activeTime;
 				p->active = true;
 				p->SetPosition(info.x, info.y);
+			}
+		}
+	}
+	break;
+	case PACKET_TYPE::BROADCAST:
+	{
+		auto context = static_pointer_cast<BroadCast>(packet.context);
+		for (const auto& info : context->players) {
+			auto iter = find_if(entities.begin(), entities.end(), [&info](const auto& e) {return e->id == info.id; });
+			if (iter != entities.end()) {
+				auto& p = *iter;
+				p->SetPosition(info.x, info.y);
+			}
+		}
+	}
+	break;
+	case PACKET_TYPE::RESTART_TO_CLIENT:
+	{
+		auto context = static_pointer_cast<RestartToClient>(packet.context);
+		if (player->id == context->id) {
+			player->active = true;
+			player->SetPosition(context->x, context->y);
+			player->SetColor(context->color);
+		}
+		else {
+			auto iter = find_if(entities.begin(), entities.end(), [&context](const auto& e) {return context->id == e->id; });
+			if (iter != entities.end() && dynamic_cast<Player*>((*iter).get()) != nullptr) {
+				auto p = dynamic_cast<Player*>((*iter).get());
+				p->SetColor(context->color);
+				p->SetPosition(context->x, context->y);
+				p->active = true;
 			}
 		}
 	}
@@ -142,6 +171,12 @@ void PlayScene::Update(const sf::Time& time)
 		entity->Update(deltaTime);
 	}
 	player->Update(deltaTime);
+
+	if (!player->active) {
+		PACKET packet{ PACKET_TYPE::RESTART_TO_SERVER };
+		packet.context = make_shared<RestartToServer>(player->id);
+		Game::Instance().Send(packet);
+	}
 
 	float halfViewWidth = Game::windowWidth / 2.0f;
 	float halfViewHeight = Game::windowHeight / 2.0f;

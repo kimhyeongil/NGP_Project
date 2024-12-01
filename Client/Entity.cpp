@@ -87,6 +87,14 @@ void Player::SetPosition(const sf::Vector2f& pos)
 
 }
 
+void Player::SetColor(uint newColor)
+{
+	if (color != newColor) {
+		color = newColor;
+		shape.setFillColor(colors[color]);
+	}
+}
+
 void Player::Update(double deltaTime)
 {
 	if (active) {

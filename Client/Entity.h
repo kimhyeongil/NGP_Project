@@ -42,12 +42,14 @@ public:
 	void SetPosition(const sf::Vector2f&) override;
 	void SetPosition(float x, float y) override { SetPosition(sf::Vector2f{ x,y }); };
 
+	void SetColor(uint newColor);
+
 	void draw(sf::RenderTarget&, sf::RenderStates) const override;
 
 	char name[16];
 	float speed = 200;
 	int size{ startSize };
-	unsigned int color = 0;
+	uint color = 0;
 private:
 	sf::Vector2f destination;
 
