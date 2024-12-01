@@ -84,11 +84,6 @@ void Server::AcceptClient()
 			excuteQueue.emplace(move(cmd));
 			cv.notify_all();
 		}
-		//auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
-		//cmd->context = make_shared<CMD_LoginSuccess>(client_sock);
-		//lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
-		//excuteQueue.emplace(move(cmd));
-		//cv.notify_all();
 	}
 }
 
@@ -246,28 +241,6 @@ void Server::ProcessClient(SOCKET client_sock)
 			cv.notify_all();
 		}
 		break;
-		//case PACKET_TYPE::PLAYER_NAME:
-		//{
-		//	auto input = make_shared<PlayerName>();
-		//	input->Recv(client_sock);
-		//
-		//	// 입력 내용 출력
-		//	ioLock.lock();
-		//	print("[TCP 서버] 클라이언트 입력: IP 주소 = {}, 포트 번호 = {}, 이름 ({})\n",addr, ntohs(clientaddr.sin_port), input->name);
-		//
-		//	auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
-		//	auto context = make_shared<PlayerName>();
-		//	memcpy(context->name, input->name, 16);
-		//	//context->name[sizeof(context->name) - 1] = '\0';  // Null 종료 보장
-		//
-		//	cmd->context = context;
-		//
-		//	lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
-		//	excuteQueue.emplace(move(cmd));  
-		//
-		//	cv.notify_all();
-		//}
-		//break;
 		default:
 			break;
 		}
