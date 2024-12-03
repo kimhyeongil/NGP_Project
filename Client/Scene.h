@@ -18,6 +18,7 @@ public:
 	sf::View view;
 protected:
 	std::vector<std::unique_ptr<Entity>> entities;
+	bool active = false;
 };
 
 class PlayScene : public Scene {

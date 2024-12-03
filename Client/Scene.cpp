@@ -72,6 +72,7 @@ void PlayScene::HandlePacket(const PACKET& packet)
 		for (int i = 1; i < context->players.size(); ++i) {
 			entities.emplace_back(make_unique<Player>(context->players[i]));
 		}
+		active = true;
 	}
 	break;
 	case PACKET_TYPE::PLAYER_APPEND:
@@ -109,7 +110,9 @@ void PlayScene::HandlePacket(const PACKET& packet)
 
 		auto iter1 = find_if(entities.begin(), entities.end(), [&context](const auto& e) {return e->id == context->id1; });
 		auto iter2 = find_if(entities.begin(), entities.end(), [&context](const auto& e) {return e->id == context->id2; });
-
+		if (iter1 == entities.end() && iter2 == entities.end()) {
+			return;
+		}
 		if (iter1 == entities.end() && context->id1 == player->id) {
 			player->OnCollision((*iter2).get());
 			(*iter2)->OnCollision(player.get());
@@ -153,10 +156,11 @@ void PlayScene::HandlePacket(const PACKET& packet)
 			auto iter = find_if(entities.begin(), entities.end(), [&info](const auto& e) {return e->id == info.id; });
 			if (iter != entities.end()) {
 				auto& p = *iter;
-
-				p->shape.setPosition(info.x, info.y);
+				if (Vector2f::Distance(p->Position(), Vector2f{ info.x,info.y }) > Player::startSpeed * 0.1f) {
+					p->shape.setPosition(info.x, info.y);
+				}
 			}
-			else if(player->id == info.id){
+			else if(player->id == info.id && Vector2f::Distance(player->Position(), Vector2f{ info.x,info.y }) > Player::startSpeed * 0.1f) {
 				player->shape.setPosition(info.x, info.y);
 			}
 		}
@@ -190,46 +194,47 @@ void PlayScene::HandlePacket(const PACKET& packet)
 
 void PlayScene::Update(const sf::Time& time)
 {
-	double deltaTime = time.asMicroseconds() * 1e-6;
+	if (active) {
 
-	for (auto& entity : entities) {
-		entity->Update(deltaTime);
+		double deltaTime = time.asMicroseconds() * 1e-6;
+
+		for (auto& entity : entities) {
+			entity->Update(deltaTime);
+		}
+		player->Update(deltaTime);
+
+		float halfViewWidth = Game::windowWidth / 2.0f;
+		float halfViewHeight = Game::windowHeight / 2.0f;
+
+		auto viewCenter = player->Position();
+
+		if (viewCenter.x - halfViewWidth < 0)
+			viewCenter.x = halfViewWidth;
+		if (viewCenter.x + halfViewWidth > worldWidth)
+			viewCenter.x = worldWidth - halfViewWidth;
+
+		if (viewCenter.y - halfViewHeight < 0)
+			viewCenter.y = halfViewHeight;
+		if (viewCenter.y + halfViewHeight > worldHeight)
+			viewCenter.y = worldHeight - halfViewHeight;
+		view.setCenter(viewCenter);
 	}
-	player->Update(deltaTime);
-
-	if (!player->active) {
-
-	}
-
-	float halfViewWidth = Game::windowWidth / 2.0f;
-	float halfViewHeight = Game::windowHeight / 2.0f;
-
-	auto viewCenter = player->Position();
-
-	if (viewCenter.x - halfViewWidth < 0)
-		viewCenter.x = halfViewWidth;
-	if (viewCenter.x + halfViewWidth > worldWidth)
-		viewCenter.x = worldWidth - halfViewWidth;
-
-	if (viewCenter.y - halfViewHeight < 0)
-		viewCenter.y = halfViewHeight;
-	if (viewCenter.y + halfViewHeight > worldHeight)
-		viewCenter.y = worldHeight - halfViewHeight;
-	view.setCenter(viewCenter);
 }
 
 void PlayScene::Render(sf::RenderWindow& window)
 {
-	window.setView(view);
+	if (active) {
+		window.setView(view);
 
-	for (const auto& line : world) {
-		window.draw(line);
+		for (const auto& line : world) {
+			window.draw(line);
+		}
+
+		for (auto& entity : entities) {
+			window.draw(*entity);
+		}
+
+		window.draw(*player);
+		window.draw(*button);
 	}
-
-	for (auto& entity : entities) {
-		window.draw(*entity);
-	}
-
-	window.draw(*player);
-	window.draw(*button);
 }

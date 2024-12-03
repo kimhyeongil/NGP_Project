@@ -30,7 +30,7 @@ protected:
 class Player : public Entity {
 public:
 	static constexpr int startSize = 200;
-
+	static constexpr float startSpeed = 200;
 	Player(int id);
 	Player(const PlayerInfo&);
 	Player(const PlayerAppend&);
@@ -51,7 +51,7 @@ public:
 	void draw(sf::RenderTarget&, sf::RenderStates) const override;
 
 	char name[16];
-	float speed = 200;
+	float speed = startSpeed;
 	int size{ startSize };
 	uint color = 0;
 private:
