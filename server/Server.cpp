@@ -73,12 +73,10 @@ void Server::AcceptClient()
 		if(type==PACKET_TYPE::PLAYER_NAME){
 		auto input = make_shared<PlayerName>();
 			input->Recv(client_sock);
-			//ioLock.lock();
+			
 			print("[TCP 서버] 클라이언트 입력:포트 번호 = {}, 이름 ({})\n", ntohs(clientaddr.sin_port), input->name);
 		
 			auto cmd = make_unique<Command>(CMD_TYPE::LOGIN_SUCCESS);
-			//auto context = make_shared<PlayerName>();
-			//memcpy(context->name, input->name, 16);
 			cmd->context = make_shared<CMD_LoginSuccess>(client_sock,input->name);
 			lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
 			excuteQueue.emplace(move(cmd));
@@ -89,7 +87,6 @@ void Server::AcceptClient()
 
 void Server::Run()
 {
-	// 업데이트, 충돌 처리 등 필요
 	auto start = chrono::high_resolution_clock::now();
 	double broadcastTime = 0.0;
 	while (true)
@@ -124,7 +121,7 @@ void Server::Run()
 void Server::CheckCollision()
 {
 	lock_guard<mutex> entityLock(mutexes[ENTITIES]);
-	 //충돌한 플레이어 간 데이터를 저장
+
 	for (auto it1 = players.begin(); it1 != players.end(); ++it1) {
 		auto& player1 = *it1;
 		if (!player1->active) {
@@ -142,13 +139,11 @@ void Server::CheckCollision()
 			if (distance < combinedRadius) {
 				player1->OnCollision(player2.get());
 				player2->OnCollision(player1.get());
-				//printf("%f, %f\n", distance, combinedRadius);
-				// 충돌 발생, CMD_CheckCollision 생성
-				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
+
+				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION);
 				auto context = make_shared<CMD_CheckCollision>(player1->id, player2->id);
 				cmd->context = context;
 
-				// Excute()로 전달
 				lock_guard<mutex> executeLock(mutexes[EXCUTE]);
 				excuteQueue.emplace(move(cmd));
 			}
@@ -167,12 +162,11 @@ void Server::CheckCollision()
 			if (distance < combinedRadius) {
 				player->OnCollision(food.get());
 				food->OnCollision(player.get());
-				cout << boolalpha <<food->active << boolalpha << endl;
-				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION); // CMD_TYPE 수정 필요
+
+				auto cmd = make_unique<Command>(CMD_TYPE::CHECK_COLLISION);
 				auto context = make_shared<CMD_CheckCollision>(player->id, food->id);
 				cmd->context = context;
 
-				// Excute()로 전달
 				lock_guard<mutex> executeLock(mutexes[EXCUTE]);
 				excuteQueue.emplace(move(cmd));
 			}
@@ -280,17 +274,16 @@ void Server::Excute()
 			clients.emplace_back(context->appendSock);
 			thread(&Server::ProcessClient, this, context->appendSock).detach();
 
-			//sf::Vector2f pos(Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize), Random::RandInt(Player::startSize, PlayScene::worldHeight - Player::startSize));
-			//테스트 타임을 줄이기 위해 비슷한 공간에서 소환 중/ 위 코드로 변경할 예정
 			auto player = make_unique<Player>(context->appendSock);
-			player->SetPosition(Random::RandInt(100, 150), Random::RandInt(100, 150));
+			player->SetPosition(Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize), 
+				Random::RandInt(Player::startSize, PlayScene::worldWidth - Player::startSize));
 			player->color = Random::RandInt(0, colors.size() - 1);
-			// 나중에 로그인 시 받은 이름으로 변경할 예정
-			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
-			// name = "Player" + to_string(players.size());
 			memcpy(player->name, context->name, sizeof(player->name));
+
 			vector<PlayerInfo> infos;
 			infos.emplace_back(*player);
+
+			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
 			for (const auto& p : players) {
 				infos.emplace_back(*p);
 			}
@@ -322,7 +315,6 @@ void Server::Excute()
 		break;
 		case CMD_TYPE::BROADCAST:
 		{
-			// 모든 클라이언트에게 현재 플레이어들의 위치를 전송
 			unique_lock<mutex> entityLock(mutexes[ENTITIES]);
 			vector<PlayerInfo> infos;
 			for (const auto& player : players) {
