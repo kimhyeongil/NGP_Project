@@ -80,7 +80,7 @@ void Server::AcceptClient()
 			cmd->context = make_shared<CMD_LoginSuccess>(client_sock,input->name);
 			lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
 			excuteQueue.emplace(move(cmd));
-			cv.notify_all();
+			cv.notify_one();
 		}
 	}
 }
@@ -104,13 +104,13 @@ void Server::Run()
 			recreateDeltaTime -= recreateTime;
 			lock_guard<mutex> lock(mutexes[EXCUTE]);
 			excuteQueue.emplace(make_unique<Command>(CMD_TYPE::RECREATE_FOOD));
-			cv.notify_all();
+			cv.notify_one();
 		}
 		if (broadcastTime >= 1.0) {
 			broadcastTime -= 1.0;
 			lock_guard<mutex> lock(mutexes[EXCUTE]);
 			excuteQueue.emplace(make_unique<Command>(CMD_TYPE::BROADCAST));
-			cv.notify_all();
+			cv.notify_one();
 		}
 		start = end;
 		Update(deltaTime);
@@ -172,7 +172,7 @@ void Server::CheckCollision()
 			}
 		}
 	}
-	cv.notify_all();
+	cv.notify_one();
 }
 
 void Server::Update(double deltaTime)
@@ -224,7 +224,7 @@ void Server::ProcessClient(SOCKET client_sock)
 
 			lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
 			excuteQueue.emplace(move(cmd));
-			cv.notify_all();
+			cv.notify_one();
 		}
 		break;
 		case PACKET_TYPE::RESTART_TO_SERVER: 
@@ -237,7 +237,7 @@ void Server::ProcessClient(SOCKET client_sock)
 
 			lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
 			excuteQueue.emplace(move(cmd));
-			cv.notify_all();
+			cv.notify_one();
 		}
 		break;
 		default:
@@ -254,7 +254,7 @@ void Server::ProcessClient(SOCKET client_sock)
 
 	lock_guard<mutex> excuteLock(mutexes[EXCUTE]);
 	excuteQueue.emplace(move(cmd));
-	cv.notify_all();
+	cv.notify_one();
 }
 
 void Server::Excute()

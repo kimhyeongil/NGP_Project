@@ -56,7 +56,7 @@ void ClientNetworkManager::AddPacket(PACKET packet)
 {
 	unique_lock<mutex> lock(sendMtx);
 	sendQueue.emplace(packet);
-	cv.notify_all();
+	cv.notify_one();
 }
 
 void ClientNetworkManager::Send()

@@ -1,10 +1,9 @@
 #pragma once
-#include "Common.h"
-
 #include <queue>
 #include <list>
 #include <mutex>
 #include <condition_variable>
+#include "Common.h"
 
 class ClientNetworkManager {
 public:
